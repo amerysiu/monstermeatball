@@ -1,0 +1,3695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Meatball - Board Game</title>
+    <style>
+/* Monster Meatball - Styles */
+/* Osamu Tezuka inspired theme with modern board game UI */
+
+:root {
+    /* Color Palette */
+    --primary-color: #FF6B6B;
+    --secondary-color: #4ECDC4;
+    --accent-color: #FFE66D;
+    --dark-bg: #2C3E50;
+    --light-bg: #ECF0F1;
+    --text-dark: #2C3E50;
+    --text-light: #FFFFFF;
+
+    /* Flavor Families (Session 2 — unifies Harmony + Spoilage) */
+    --family-ember: #FF4500;
+    --family-tide: #4A90A4;
+    --family-verdant: #228B22;
+    --family-bloom: #9370DB;
+
+    /* Meat Colors (mapped to Family) */
+    --red-meat: var(--family-ember);
+    --white-meat: var(--family-verdant);
+    --exotic-meat: var(--family-bloom);
+    --sea-meat: var(--family-tide);
+
+    /* Aroma Colors */
+    --earthy-aroma: var(--family-verdant);
+    --sweet-aroma: var(--family-bloom);
+    --spicy-aroma: var(--family-ember);
+    --salty-aroma: var(--family-tide);
+
+    /* Seasoning Colors */
+    --herbal-seasoning: var(--family-verdant);
+    --mystic-seasoning: var(--family-bloom);
+    --fiery-seasoning: var(--family-ember);
+    --mineral-seasoning: var(--family-tide);
+
+    /* Stamina */
+    --stamina-full: #4ECDC4;
+    --stamina-low: #FF6B6B;
+    --stamina-empty: #95a5a6;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+
+    /* Border */
+    --border-radius: 8px;
+    --border-thick: 3px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+#app {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--space-md);
+}
+
+/* Header */
+.game-header {
+    background: var(--light-bg);
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-md);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.game-header h1 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    text-shadow: 2px 2px 0 var(--accent-color);
+}
+
+.mode-selector {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.mode-btn {
+    padding: var(--space-sm) var(--space-md);
+    border: var(--border-thick) solid var(--primary-color);
+    background: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.mode-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.tier-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.tier-selector select {
+    padding: var(--space-sm);
+    border: 2px solid var(--secondary-color);
+    border-radius: var(--border-radius);
+    font-size: 1em;
+    font-weight: bold;
+}
+
+/* Screens */
+.screen {
+    background: var(--light-bg);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    min-height: 600px;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+/* Setup Screen */
+.setup-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.setup-container h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: var(--space-lg);
+    font-size: 2em;
+}
+
+.player-count {
+    margin-bottom: var(--space-lg);
+}
+
+.player-count label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: var(--space-sm);
+}
+
+.player-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.player-count-btn {
+    padding: var(--space-md) var(--space-lg);
+    border: var(--border-thick) solid var(--secondary-color);
+    background: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: all 0.3s;
+}
+
+.player-count-btn.active {
+    background: var(--secondary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+.player-setup {
+    margin: var(--space-lg) 0;
+}
+
+.player-card {
+    background: white;
+    border: 3px solid var(--accent-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.player-card h3 {
+    color: var(--primary-color);
+    margin-bottom: var(--space-sm);
+}
+
+.character-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.character-option {
+    padding: var(--space-md);
+    border: 2px solid #ddd;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.character-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.character-option.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+/* Game Screen */
+.game-info-bar {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.game-info-bar .label {
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+.game-info-bar .value {
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.badge {
+    background: var(--accent-color);
+    color: var(--text-dark);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* Game Board Layout */
+.game-board-container {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+@media (max-width: 1200px) {
+    .game-board-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sidebars */
+.player-sidebar, .game-sidebar {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.player-sidebar h3, .game-sidebar h3 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.player-status-card {
+    background: #f8f9fa;
+    border-left: 4px solid var(--secondary-color);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    border-radius: 4px;
+}
+
+.player-status-card.active {
+    border-left-color: var(--primary-color);
+    background: #fff3cd;
+}
+
+.player-status-card .player-name {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.player-status-card .score {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* Underdog Bonus */
+.underdog-box {
+    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    margin-top: var(--space-md);
+    text-align: center;
+}
+
+.underdog-box h4 {
+    margin-bottom: var(--space-sm);
+}
+
+/* Co-op Track */
+.coop-track {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    margin-top: var(--space-md);
+}
+
+.track-bar {
+    background: rgba(255,255,255,0.3);
+    height: 30px;
+    border-radius: 15px;
+    position: relative;
+    margin: var(--space-sm) 0;
+    overflow: hidden;
+}
+
+.track-progress {
+    background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+    height: 100%;
+    transition: width 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.track-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Game Grid */
+.game-grid-area {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#game-grid {
+    display: grid;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.grid-3x3 {
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(3, 120px);
+}
+
+.grid-4x4 {
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(4, 100px);
+}
+
+.grid-5x5 {
+    grid-template-columns: repeat(5, 90px);
+    grid-template-rows: repeat(5, 90px);
+}
+
+.grid-tile {
+    background: #e0e0e0;
+    border: 3px solid #999;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.grid-tile.flipped {
+    background: white;
+    border-color: var(--secondary-color);
+}
+
+.grid-tile.player-here {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.grid-tile.clickable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.grid-tile .tile-icon {
+    font-size: 3em;
+}
+
+.grid-legend {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.9em;
+}
+
+/* Inventory */
+.inventory-section {
+    margin-bottom: var(--space-md);
+}
+
+.inventory-section h4 {
+    color: var(--secondary-color);
+    margin-bottom: var(--space-sm);
+}
+
+.ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: var(--space-xs);
+}
+
+.ingredient-item {
+    background: #f8f9fa;
+    padding: var(--space-sm);
+    border-radius: 4px;
+    text-align: center;
+    border: 2px solid #ddd;
+}
+
+.ingredient-item .count {
+    font-weight: bold;
+    font-size: 1.2em;
+    display: block;
+}
+
+/* Action Panel */
+.action-panel {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    flex: 1;
+    min-width: 150px;
+    padding: var(--space-md);
+    border: 3px solid var(--secondary-color);
+    background: white;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-action:hover:not(:disabled) {
+    background: var(--secondary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-special {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+}
+
+.btn-end-turn {
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-end-turn:hover {
+    background: #ff5252;
+    transform: scale(1.02);
+}
+
+.action-status {
+    background: #e3f2fd;
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-md);
+    border-left: 4px solid var(--secondary-color);
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    color: var(--primary-color);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Kill State Selector */
+.kill-state-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.kill-state-btn {
+    padding: var(--space-lg);
+    border: 3px solid #ddd;
+    background: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.kill-state-btn:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.kill-state-btn.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Quick Reference */
+.quick-ref {
+    position: fixed;
+    bottom: 0;
+    right: 20px;
+    background: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    box-shadow: -2px -2px 10px rgba(0,0,0,0.2);
+    max-width: 300px;
+    z-index: 500;
+}
+
+.quick-ref .toggle-btn {
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.quick-ref .ref-content {
+    padding: var(--space-md);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.quick-ref.collapsed .ref-content {
+    display: none;
+}
+
+.quick-ref h3 {
+    color: var(--primary-color);
+    font-size: 1em;
+    margin: var(--space-sm) 0;
+}
+
+.quick-ref ul {
+    list-style: none;
+    padding-left: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.quick-ref li {
+    margin-bottom: var(--space-xs);
+    font-size: 0.9em;
+}
+
+/* ================================================================
+   SESSION 2/3 ADDITIONS: Stamina, AP Pool, Tame, Tokens, Corner-Scoring
+   ================================================================ */
+
+/* Stamina Bar */
+.stamina-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin: var(--space-sm) 0;
+}
+
+.stamina-bar .stamina-label {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+.stamina-pips {
+    display: flex;
+    gap: 4px;
+}
+
+.stamina-pip {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--stamina-empty);
+    background: var(--stamina-empty);
+    transition: all 0.3s;
+}
+
+.stamina-pip.filled {
+    background: var(--stamina-full);
+    border-color: var(--stamina-full);
+    box-shadow: 0 0 6px var(--stamina-full);
+}
+
+.stamina-pip.filled.low {
+    background: var(--stamina-low);
+    border-color: var(--stamina-low);
+}
+
+/* AP Pool (replaces old fixed "Actions: X/2") */
+.ap-pool {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.ap-pip {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: var(--accent-color);
+    border: 2px solid #cca800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+.ap-pip.spent {
+    background: #ddd;
+    border-color: #aaa;
+    opacity: 0.5;
+}
+
+/* Family Badge (used on tokens, dish cards, monster edges) */
+.family-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: white;
+}
+
+.family-ember   { background: var(--family-ember); }
+.family-tide    { background: var(--family-tide); }
+.family-verdant { background: var(--family-verdant); }
+.family-bloom   { background: var(--family-bloom); }
+
+/* Ingredient Token Display (replaces rotation-as-inventory) */
+.token-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: var(--space-sm);
+}
+
+.token-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-sm);
+    border-radius: var(--border-radius);
+    border: 3px solid;
+    background: white;
+    text-align: center;
+}
+
+.token-chip .token-icon {
+    font-size: 1.8em;
+}
+
+.token-chip .token-count {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 2px;
+}
+
+.token-chip .token-name {
+    font-size: 0.65em;
+    opacity: 0.8;
+}
+
+/* Companion Display (Tamed monsters — permanent, never re-extracted) */
+.companion-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.companion-card {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 3px solid var(--secondary-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-sm);
+    min-width: 140px;
+    text-align: center;
+    position: relative;
+}
+
+.companion-card::before {
+    content: "🤝 COMPANION";
+    display: block;
+    font-size: 0.6em;
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin-bottom: 4px;
+}
+
+.companion-card .bonus-text {
+    font-size: 0.75em;
+    margin-top: var(--space-xs);
+    font-style: italic;
+}
+
+/* Kill State / Hunt Modal — Tame option added */
+.kill-state-options {
+    grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.kill-state-btn.tame-option {
+    border-color: var(--secondary-color);
+}
+
+.kill-state-btn.tame-option.selected {
+    background: var(--secondary-color);
+}
+
+.kill-state-btn small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.7em;
+}
+
+/* Corner-Scored Dish Cards */
+.dish-card {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    background: linear-gradient(135deg, #fffef7 0%, #fff9e6 100%);
+    border: 3px solid var(--accent-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.dish-card .dish-name {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.95em;
+    color: var(--primary-color);
+    margin-top: var(--space-md);
+}
+
+.dish-card .dish-requirements {
+    text-align: center;
+    font-size: 0.75em;
+    color: #666;
+}
+
+.dish-card .dish-flavor {
+    text-align: center;
+    font-size: 0.65em;
+    font-style: italic;
+    color: #888;
+    margin-bottom: var(--space-md);
+    padding: 0 var(--space-xs);
+}
+
+.dish-corner {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.95em;
+    border-radius: 6px;
+    background: white;
+    border: 2px solid var(--secondary-color);
+}
+
+.dish-corner.locked {
+    background: #eee;
+    border-color: #ccc;
+    color: #bbb;
+}
+
+.dish-corner.top-left { top: 6px; left: 6px; }
+.dish-corner.top-right { top: 6px; right: 6px; }
+.dish-corner.bottom-left { bottom: 6px; left: 6px; }
+.dish-corner.bottom-right {
+    bottom: 6px; right: 6px;
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.dish-corner.bottom-right.locked {
+    background: #eee;
+    color: #bbb;
+    border-color: #ccc;
+}
+
+.dish-card.type-signature {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #fff0f0 0%, #ffe8e8 100%);
+}
+
+.dish-card.type-wildcard {
+    border-style: dashed;
+}
+
+.dish-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    justify-content: center;
+    padding: var(--space-md);
+}
+
+/* Map Preview / Fixed Layout Rendering */
+.map-tabs {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    margin-bottom: var(--space-md);
+}
+
+.map-tab {
+    padding: var(--space-sm) var(--space-lg);
+    border: 3px solid var(--secondary-color);
+    background: white;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.map-tab.active {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.location-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    border: 3px solid #999;
+    font-size: 0.65em;
+    text-align: center;
+    padding: 4px;
+    background: white;
+}
+
+.location-tile .tile-emoji { font-size: 1.8em; }
+.location-tile.tile-monster { border-color: #c0392b; background: #fdecea; }
+.location-tile.tile-shop { border-color: var(--secondary-color); background: #e8f8f7; }
+.location-tile.tile-fog { border-color: #8e7cc3; background: #f2ecfa; }
+.location-tile.tile-utility { border-color: var(--accent-color); background: #fffbe8; }
+.location-tile.tile-special { border-color: var(--primary-color); background: #ffe8e8; box-shadow: 0 0 10px var(--primary-color); }
+
+/* Character Select Cards (Session 3: bio + quote + stats) */
+.character-full-card {
+    background: white;
+    border: 3px solid #ddd;
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.character-full-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.character-full-card.selected {
+    border-color: var(--primary-color);
+    background: #fff5f5;
+}
+
+.character-full-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.character-full-card .char-arc {
+    font-size: 0.75em;
+    color: var(--secondary-color);
+    font-weight: bold;
+    margin-bottom: var(--space-xs);
+}
+
+.character-full-card .char-quote {
+    font-style: italic;
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: var(--space-sm);
+    border-left: 3px solid var(--accent-color);
+    padding-left: var(--space-sm);
+}
+
+.character-full-card .char-bio {
+    font-size: 0.8em;
+    color: #444;
+    margin-bottom: var(--space-sm);
+}
+
+.character-full-card .char-stats {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.85em;
+    margin-bottom: var(--space-sm);
+}
+
+.character-full-card .char-passive,
+.character-full-card .char-signature {
+    font-size: 0.75em;
+    background: #f8f9fa;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.character-full-card .char-signature {
+    background: #fff3cd;
+}
+
+/* Tame Action Button — distinct from Hunt */
+.btn-tame {
+    border-color: var(--secondary-color) !important;
+}
+
+.btn-tame:hover:not(:disabled) {
+    background: var(--secondary-color) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .game-header h1 {
+        font-size: 1.8em;
+    }
+    
+    .game-board-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-action {
+        width: 100%;
+    }
+
+    .dish-gallery {
+        gap: var(--space-sm);
+    }
+
+    .dish-card {
+        width: 170px;
+        height: 170px;
+    }
+}
+
+</style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="game-header">
+            <h1>🍖 Monster Meatball 🍖</h1>
+            <div class="mode-selector">
+                <button id="btn-competitive" class="mode-btn active">Competitive</button>
+                <button id="btn-coop" class="mode-btn">Co-op: Feast Challenge</button>
+            </div>
+            <div class="tier-selector">
+                <label>Rules Tier:</label>
+                <select id="tier-select">
+                    <option value="basic">Basic (Round 1 - Learning)</option>
+                    <option value="standard" selected>Standard (Full Game)</option>
+                    <option value="expert">Expert (All Modules)</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Preview Navigation (Session 3: browse data before/without starting a game) -->
+        <nav class="preview-nav" style="display:flex; gap: var(--space-sm); margin-bottom: var(--space-md); justify-content:center;">
+            <button class="mode-btn preview-tab active" data-preview="setup">▶ Play</button>
+            <button class="mode-btn preview-tab" data-preview="characters">👥 Characters</button>
+            <button class="mode-btn preview-tab" data-preview="map">🗺️ Map Layouts</button>
+            <button class="mode-btn preview-tab" data-preview="dishes">🍽️ Dish Gallery</button>
+        </nav>
+
+        <!-- Character Detail Preview Screen -->
+        <div id="screen-characters" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">The Four Heroes</h2>
+            <div id="character-full-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap: var(--space-md);">
+                <!-- Rendered by main.js from GAME_DATA.characters -->
+            </div>
+        </div>
+
+        <!-- Map Layout Preview Screen -->
+        <div id="screen-map" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">Fixed Map Layouts</h2>
+            <div class="map-tabs">
+                <button class="map-tab active" data-round="1">Round 1 (3×3)</button>
+                <button class="map-tab" data-round="2">Round 2 (4×4)</button>
+                <button class="map-tab" data-round="3">Round 3 (5×5)</button>
+            </div>
+            <div id="map-preview-grid" style="display:grid; gap:6px; margin: 0 auto; justify-content:center;">
+                <!-- Rendered by main.js from GAME_DATA.mapLayouts -->
+            </div>
+            <p id="map-design-note" style="max-width:700px; margin:var(--space-md) auto; font-size:0.85em; color:#555; text-align:center;"></p>
+        </div>
+
+        <!-- Dish Gallery Preview Screen -->
+        <div id="screen-dishes" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">All 36 Dishes — Corner-Scored</h2>
+            <p style="text-align:center; font-size:0.85em; color:#666;">
+                Corners: <b>Top-Left</b>=No Harmony · <b>Top-Right</b>=Partial · <b>Bottom-Left</b>=Diverse (Expert) · <b>Bottom-Right</b>=Perfect
+            </p>
+            <div class="dish-gallery" id="dish-gallery">
+                <!-- Rendered by main.js from GAME_DATA.dishes -->
+            </div>
+        </div>
+
+        <!-- Game Setup Screen -->
+        <div id="setup-screen" class="screen">
+            <div class="setup-container">
+                <h2>Game Setup</h2>
+                
+                <div class="player-count">
+                    <label>Number of Players:</label>
+                    <div class="player-buttons">
+                        <button class="player-count-btn" data-count="1">1 (Solo)</button>
+                        <button class="player-count-btn active" data-count="2">2 ⭐</button>
+                        <button class="player-count-btn" data-count="3">3 ⭐</button>
+                        <button class="player-count-btn" data-count="4">4</button>
+                    </div>
+                </div>
+
+                <div class="player-setup" id="player-setup">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div id="setup-error" style="color:#c0392b; text-align:center; margin-bottom:var(--space-sm);"></div>
+                <button id="btn-start-game" class="btn-primary">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <!-- Game Info Bar -->
+            <div class="game-info-bar">
+                <div class="round-info">
+                    <span class="label">Round:</span>
+                    <span id="current-round" class="value">1</span>
+                    <span class="label">/ 3</span>
+                    <span class="grid-size">(3×3)</span>
+                </div>
+                
+                <div class="turn-info">
+                    <span class="label">Current Player:</span>
+                    <span id="current-player-name" class="value player-name">Player 1</span>
+                    <span class="badge" id="first-player-badge">First Player</span>
+                </div>
+
+                <div class="ap-pool">
+                    <span class="label">AP:</span>
+                    <span id="ap-pips-display"></span>
+                </div>
+
+                <div class="stamina-bar">
+                    <span class="stamina-label">🔋 Stamina:</span>
+                    <span class="stamina-pips" id="stamina-pips-display"></span>
+                </div>
+            </div>
+
+            <!-- Game Board Area -->
+            <div class="game-board-container">
+                <!-- Left Sidebar: Player Status -->
+                <aside class="player-sidebar">
+                    <h3>Players</h3>
+                    <div id="player-status-list">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <!-- Underdog Bonus Indicator -->
+                    <div id="underdog-indicator" class="underdog-box hidden">
+                        <h4>⬆️ Underdog Bonus</h4>
+                        <p id="underdog-text">Last place gets +1 extraction</p>
+                    </div>
+
+                    <!-- Co-op Dark Hour Track -->
+                    <div id="coop-track" class="coop-track hidden">
+                        <h4>🌙 Dark Hour Track</h4>
+                        <div class="track-bar">
+                            <div class="track-progress" id="dark-hour-progress"></div>
+                            <span class="track-value" id="dark-hour-value">0 / 10</span>
+                        </div>
+                        <div class="festival-dishes-remaining">
+                            <span>Festival Dishes: <strong id="festival-remaining">8</strong></span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Center: Game Grid -->
+                <main class="game-grid-area">
+                    <div id="game-grid" class="grid-3x3">
+                        <!-- Dynamically generated tiles -->
+                    </div>
+
+                    <div class="grid-legend">
+                        <span class="legend-item">🟩 = Your position</span>
+                        <span class="legend-item">🔵 = Flipped tile</span>
+                        <span class="legend-item">⬜ = Unflipped</span>
+                    </div>
+                </main>
+
+                <!-- Right Sidebar: Game State -->
+                <aside class="game-sidebar">
+                    <!-- Available Dishes -->
+                    <div class="available-dishes">
+                        <h3>🍽️ Available Dishes</h3>
+                        <div id="dish-cards-display" class="card-display">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Current Player Inventory -->
+                    <div class="player-inventory">
+                        <h3>📦 Your Inventory</h3>
+                        <div class="inventory-section">
+                            <h4>Captured Monsters <small>(not yet extracted)</small></h4>
+                            <div id="captured-monsters" class="monster-list">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>Ingredient Tokens</h4>
+                            <div id="ingredient-token-grid" class="token-grid">
+                                <!-- Dynamically populated: token-chip per type held -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>🤝 Companions <small>(Tamed — permanent)</small></h4>
+                            <div id="companion-list" class="companion-list">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>Tools & Tokens</h4>
+                            <div id="tools-list" class="tools-display">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="action-panel">
+                <div class="action-buttons">
+                    <button id="btn-flip-tile" class="btn-action" disabled>
+                        🎴 Explore <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-act-hunt" class="btn-action" disabled>
+                        ⚔️ Hunt <small>(1 AP + 1 Stamina)</small>
+                    </button>
+                    <button id="btn-act-tame" class="btn-action btn-tame" disabled>
+                        🤝 Tame <small>(1 AP + 1 Stamina)</small>
+                    </button>
+                    <button id="btn-open-extract" class="btn-action" disabled>
+                        🧪 Extract <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-move" class="btn-action" disabled>
+                        🚶 Move <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-rest" class="btn-action" disabled>
+                        💤 Rest <small>(1 AP, +1 Stamina)</small>
+                    </button>
+                    <button id="btn-complete-dish" class="btn-action">
+                        🍽️ Complete Dish
+                    </button>
+                    <button id="btn-use-power" class="btn-action btn-special">
+                        ⭐ Signature Power <small>(1/game)</small>
+                    </button>
+                </div>
+
+                <div class="action-status" id="action-status">
+                    <p>Select an action to begin your turn</p>
+                </div>
+
+                <button id="btn-end-turn" class="btn-end-turn">End Turn</button>
+            </div>
+        </div>
+
+        <!-- Modal for Monster Encounter -->
+        <div id="modal-monster" class="modal hidden">
+            <div class="modal-content">
+                <h2>Monster Encounter!</h2>
+                <div id="monster-display" class="monster-card-large">
+                    <!-- Monster details -->
+                </div>
+                <div class="monster-combat">
+                    <div class="combat-stats">
+                        <span>Your ATK: <strong id="player-atk">0</strong></span>
+                        <span>vs</span>
+                        <span>Monster HP: <strong id="monster-hp">0</strong></span>
+                        <span>| Monster ATK (fail penalty): <strong id="monster-atk">0</strong></span>
+                    </div>
+                    <div class="kill-state-selector">
+                        <h3>Choose Approach:</h3>
+                        <div class="kill-state-options">
+                            <button class="kill-state-btn" data-state="CAREFUL">
+                                🗡️ Careful<br>
+                                <small>Lowest edge · 1 Stamina</small>
+                            </button>
+                            <button class="kill-state-btn" data-state="BOLD">
+                                🗡️~ Bold<br>
+                                <small>Any normal edge · refunds Stamina</small>
+                            </button>
+                            <button class="kill-state-btn" data-state="DESPERATE">
+                                🛠️ Desperate<br>
+                                <small>+Bonus edge · 1 Stamina, spoilage ×2</small>
+                            </button>
+                            <button class="kill-state-btn tame-option" data-state="TAMED">
+                                🤝 Tame<br>
+                                <small>Guaranteed low edge · never spoils · becomes Companion</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-hunt-monster" class="btn-primary">Hunt Monster</button>
+                    <button id="btn-cancel-hunt" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Shop Extraction -->
+        <div id="modal-extraction" class="modal hidden">
+            <div class="modal-content">
+                <h2>Extract Ingredients</h2>
+                <div id="extraction-monster-display">
+                    <!-- Monster with edge selection -->
+                </div>
+                <div class="edge-selector">
+                    <button class="edge-btn" data-edge="top">⬆️ Top (Meat)</button>
+                    <button class="edge-btn" data-edge="left">⬅️ Left (Aroma)</button>
+                    <button class="edge-btn" data-edge="right">➡️ Right (Seasoning)</button>
+                    <button class="edge-btn" data-edge="bottom" disabled>⬇️ Bottom (Bonus)</button>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-extract" class="btn-primary">Extract</button>
+                    <button id="btn-cancel-extraction" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Dish Completion -->
+        <div id="modal-dish" class="modal hidden">
+            <div class="modal-content">
+                <h2>Complete Dish</h2>
+                <div id="dish-selection">
+                    <!-- Available dishes player can complete -->
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-confirm-dish" class="btn-primary">Complete</button>
+                    <button id="btn-cancel-dish" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reference Panel (Collapsible) -->
+        <div id="quick-ref" class="quick-ref collapsed">
+            <button id="toggle-ref" class="toggle-btn">📋 Quick Reference</button>
+            <div class="ref-content">
+                <h3>Flavor Families (Harmony + Spoilage, unified)</h3>
+                <ul>
+                    <li><span class="family-badge family-ember">🔥 Ember</span> Red Meat / Spicy / Fiery</li>
+                    <li><span class="family-badge family-tide">🌊 Tide</span> Sea Meat / Salty / Mineral</li>
+                    <li><span class="family-badge family-verdant">🌿 Verdant</span> White Meat / Earthy / Herbal</li>
+                    <li><span class="family-badge family-bloom">🌸 Bloom</span> Exotic Meat / Sweet / Mystic</li>
+                </ul>
+                <h3>Spoilage (cross-Family only)</h3>
+                <ul>
+                    <li>🔥 Ember ≠ 🌸 Bloom</li>
+                    <li>🌊 Tide ≠ 🌿 Verdant</li>
+                    <li>🌸 Bloom ≠ 🌊 Tide</li>
+                </ul>
+                <h3>Kill States (Round 2+)</h3>
+                <ul>
+                    <li>🗡️ Careful: lowest edge, 1 Stamina</li>
+                    <li>🗡️~ Bold: any edge, refunds Stamina</li>
+                    <li>🛠️ Desperate: +bonus edge, spoilage ×2</li>
+                    <li>🤝 Tame: guaranteed edge, never spoils, becomes Companion</li>
+                </ul>
+                <h3>Stamina</h3>
+                <ul>
+                    <li>Max 3 (refills each Round)</li>
+                    <li>At 0: only Bold/Desperate possible</li>
+                    <li>Failed Hunt: lose Stamina = Monster ATK</li>
+                    <li>Round 1: Stamina inactive, always Clean</li>
+                </ul>
+                <h3>Actions (AP pool: 2 in R1, 3 in R2-3)</h3>
+                <ul>
+                    <li>Explore, Move, Act, Rest — 1 AP each, any order</li>
+                </ul>
+                <h3>Dish Scoring (Corners)</h3>
+                <ul>
+                    <li>Top-Left = No Harmony</li>
+                    <li>Top-Right = Partial (majority Family)</li>
+                    <li>Bottom-Left = Diverse, Expert only (3+ Families)</li>
+                    <li>Bottom-Right = Perfect (all one Family)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Monster Meatball - Game Data
+// All cards, characters, and game constants
+// SESSION 2 REVAMP: Stamina system, Tame/Companion mechanic, Flavor Families,
+// corner-scoring, 20 monsters, expanded location set, AP-pool actions.
+
+const GAME_DATA = {
+
+    // ================================================================
+    // CHARACTERS (4) — Stamina-linked passives define each arc mechanically
+    // ================================================================
+    characters: [
+        {
+            id: 'butcher_bob',
+            name: 'Butcher Bob',
+            role: 'Processor',
+            arc: 'Power → Restraint',
+            quote: 'A good hunter kills once. A good butcher wastes nothing.',
+            bio: 'Enormous, cheerful, and surprisingly gentle. Bob grew up in his family\'s butcher shop and learned that hunting is easy — respecting what comes after is the hard part.',
+            baseAttack: 3,
+            maxStamina: 3,
+            startingResource: { type: 'tool', id: 'cleaver', equipped: true },
+            passive: {
+                name: 'Heavy Hand',
+                effects: [
+                    { trigger: 'kill_state_brutal', effect: 'no_stamina_cost' },
+                    { trigger: 'kill_state_clean_or_careful', effect: 'extra_stamina_cost', value: 1 }
+                ],
+                text: 'Brutal kills cost no Stamina. Clean/Careful kills cost +1 extra Stamina.'
+            },
+            signaturePower: {
+                name: 'Perfect Cut',
+                description: 'Extract from 2 edges of the same monster in one Act.',
+                usesPerGame: 1
+            }
+        },
+        {
+            id: 'tracker_tessa',
+            name: 'Tracker Tessa',
+            role: 'Hunter',
+            arc: 'Precision → Adaptability',
+            quote: 'The perfect shot is the one that leaves the ingredients untouched.',
+            bio: 'Precise, self-reliant, and a little too confident in her own read of the world. Tessa studies wind, footprints, and feeding patterns rather than trusting brute force.',
+            baseAttack: 2,
+            maxStamina: 4,
+            startingResource: { type: 'reroll_token', count: 1 }, // extra, in addition to standard 2
+            passive: {
+                name: 'Efficient Hunter',
+                effects: [
+                    { trigger: 'always', effect: 'extract_at_ruin_skip_shop' },
+                    { trigger: 'fog_card_drawn', effect: 'must_resolve_face_up_before_risk_posture' }
+                ],
+                text: 'May extract monsters at Ruins, skipping the shop trip. Must resolve Fog cards face-up before choosing Risk Posture (cannot bluff through uncertainty).'
+            },
+            signaturePower: {
+                name: 'Ambush Hunter',
+                description: 'Hunt 2 monsters in a single Act action.',
+                usesPerGame: 1
+            }
+        },
+        {
+            id: 'trapper_tim',
+            name: 'Trapper Tim',
+            role: 'Planner',
+            arc: 'Caution → Courage',
+            quote: 'Why fight the monster when you can convince it to defeat itself?',
+            bio: 'Clever, cautious, and quietly convinced that ten minutes of preparation beats ten seconds of combat. Tim would rather understand a monster than fight it.',
+            baseAttack: 1,
+            maxStamina: 3,
+            startingResource: { type: 'tool', id: 'trap', equipped: true },
+            passive: {
+                name: "Snarer's Patience",
+                effects: [
+                    { trigger: 'hunt_facedown_ruin_immediately', effect: 'always_clean_eligible_ignores_stamina' }
+                ],
+                text: 'Facedown Ruins hunted immediately upon reveal are always Clean-kill eligible, regardless of current Stamina.'
+            },
+            signaturePower: {
+                name: 'Preservation Expert',
+                description: 'Ignore all spoilage checks for the rest of this round.',
+                usesPerGame: 1
+            }
+        },
+        {
+            id: 'hunter_hank',
+            name: 'Hunter Hank',
+            role: 'All-rounder',
+            arc: 'Courage → Wisdom',
+            quote: "If it's bigger than me, it's probably worth hunting.",
+            bio: 'The youngest, loudest, and most eager to prove himself. Hank believes courage solves everything a plan can\'t — until he meets something bravery alone can\'t defeat.',
+            baseAttack: 2,
+            maxStamina: 3,
+            startingResource: { type: 'bonus_ap_token', count: 1, usableAnyRound: true },
+            passive: {
+                name: 'Steady Nerve',
+                effects: [
+                    { trigger: 'once_per_round', effect: 'hunt_without_stamina_cost' }
+                ],
+                text: 'Once per round, may Hunt without spending Stamina. No other built-in weakness.'
+            },
+            signaturePower: {
+                name: 'Fearless Feast',
+                description: 'Complete a dish without paying one required ingredient type.',
+                usesPerGame: 1
+            },
+            optionalExpertRule: {
+                name: 'Impulsive',
+                roundsActive: [1],
+                text: "In Round 1 only, if Hank is adjacent to an unrevealed Ruin at the start of his turn, he must spend his first AP exploring it. This restriction disappears from Round 2 onward, dramatizing Hank's growth."
+            }
+        }
+    ],
+
+    // ================================================================
+    // MONSTERS (20 total)
+    // Every monster follows the same edge shape (Top=Meat, Left=Aroma,
+    // Right=Seasoning, Bottom=Bonus/conditional). ATK now matters: a
+    // failed Hunt costs the player Stamina equal to this value (min 1).
+    // companionBonus = permanent passive gained if Tamed instead of killed.
+    // ================================================================
+    monsters: [
+        // --- TIER I (Round 1, HP 1-2, ATK 1) ---
+        {
+            id: 'flame_lizard', name: 'Flame Lizard', tier: 1, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'Red Meat', value: 2 },
+                left: { type: 'Spicy Aroma', value: 1 },
+                right: { type: 'Fiery Seasoning', value: 1 },
+                bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Dark Hour' }
+            },
+            companionBonus: '+1 max Stamina for the rest of the game.'
+        },
+        {
+            id: 'grumble_boar', name: 'Grumble Boar', tier: 1, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'Red Meat', value: 2 },
+                left: { type: 'Earthy Aroma', value: 1 },
+                right: { type: 'Herbal Seasoning', value: 1 },
+                bottom: { type: 'Red Meat', value: 1, condition: 'Clean Kill' }
+            },
+            companionBonus: 'Once per round, may Rest as a free action (0 AP).'
+        },
+        {
+            id: 'tide_eel', name: 'Tide Eel', tier: 1, hp: 1, atk: 1,
+            edges: {
+                top: { type: 'Sea Meat', value: 1 },
+                left: { type: 'Salty Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 1 },
+                bottom: { type: 'Sea Meat', value: 1, condition: 'Extracted at Butcher' }
+            },
+            companionBonus: 'Ignore spoilage once per round for the rest of the game.'
+        },
+        {
+            id: 'moss_stag', name: 'Moss Stag', tier: 1, hp: 1, atk: 1,
+            edges: {
+                top: { type: 'White Meat', value: 1 },
+                left: { type: 'Earthy Aroma', value: 1 },
+                right: { type: 'Herbal Seasoning', value: 1 },
+                bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Clean Kill' }
+            },
+            companionBonus: '+1 AP on any turn you also Rest.'
+        },
+        {
+            id: 'ember_crab', name: 'Ember Crab', tier: 1, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'Red Meat', value: 1 },
+                left: { type: 'Spicy Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 1 },
+                bottom: { type: 'Red Meat', value: 1, condition: 'Brutal Kill' }
+            },
+            companionBonus: 'Your Brutal kills only check spoilage once (not twice) for the rest of the game.'
+        },
+        {
+            id: 'bristle_yak', name: 'Bristle Yak', tier: 1, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'White Meat', value: 2 },
+                left: { type: 'Earthy Aroma', value: 1 },
+                right: { type: 'Fiery Seasoning', value: 1 },
+                bottom: { type: 'White Meat', value: 1, condition: 'Rushed Kill' }
+            },
+            companionBonus: 'Rest recovers +2 Stamina instead of +1, for the rest of the game.'
+        },
+        {
+            id: 'candy_slime', name: 'Candy Slime', tier: 1, hp: 1, atk: 1,
+            edges: {
+                top: { type: 'Exotic Meat', value: 1 },
+                left: { type: 'Sweet Aroma', value: 1 },
+                right: { type: 'Mystic Seasoning', value: 1 },
+                bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
+            },
+            companionBonus: 'Gain 1 Reroll Token immediately when Tamed.'
+        },
+
+        // --- TIER II (Round 2, HP 2-3, ATK 1-2) ---
+        {
+            id: 'sky_serpent', name: 'Sky Serpent', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'White Meat', value: 1 },
+                left: { type: 'Sweet Aroma', value: 2 },
+                right: { type: 'Mystic Seasoning', value: 2 },
+                bottom: { type: 'Mystic Seasoning', value: 1, condition: 'Rushed Kill' }
+            },
+            companionBonus: '+1 Reroll Token immediately.'
+        },
+        {
+            id: 'rock_golem', name: 'Rock Golem', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'Exotic Meat', value: 2 },
+                left: { type: 'Salty Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 2 },
+                bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Extracted at Seasoning Mill' }
+            },
+            companionBonus: '+1 max AP on turns you do not Hunt.'
+        },
+        {
+            id: 'river_leviathan', name: 'River Leviathan', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'Sea Meat', value: 2 },
+                left: { type: 'Salty Aroma', value: 2 },
+                right: { type: 'Mystic Seasoning', value: 1 },
+                bottom: { type: 'Sea Meat', value: 1, condition: 'Net used' }
+            },
+            companionBonus: 'Once per round, treat a Rushed kill as Clean.'
+        },
+        {
+            id: 'pearl_manta', name: 'Pearl Manta', tier: 2, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'Sea Meat', value: 1 },
+                left: { type: 'Sweet Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 1 },
+                bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
+            },
+            companionBonus: 'Immune to the Ember≠Bloom spoilage pair only, for the rest of the game.'
+        },
+        {
+            id: 'mirror_kitsune', name: 'Mirror Kitsune', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'Exotic Meat', value: 1 },
+                left: { type: 'Sweet Aroma', value: 2 },
+                right: { type: 'Mystic Seasoning', value: 2 },
+                bottom: { type: 'Exotic Meat', value: 1, condition: 'Clean Kill' }
+            },
+            companionBonus: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).'
+        },
+        {
+            id: 'spore_shambler', name: 'Spore Shambler', tier: 2, hp: 2, atk: 1,
+            edges: {
+                top: { type: 'White Meat', value: 1 },
+                left: { type: 'Earthy Aroma', value: 1 },
+                right: { type: 'Herbal Seasoning', value: 2 },
+                bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Careful Kill' }
+            },
+            companionBonus: 'Wildcard dishes score +1 for the rest of the game.'
+        },
+        {
+            id: 'frost_owlbear', name: 'Frost Owlbear', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'White Meat', value: 2 },
+                left: { type: 'Salty Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 1 },
+                bottom: { type: 'White Meat', value: 1, condition: 'Brutal Kill' }
+            },
+            companionBonus: 'Once per round, Move for free (0 AP).'
+        },
+        {
+            id: 'thorn_basilisk', name: 'Thorn Basilisk', tier: 2, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'Exotic Meat', value: 2 },
+                left: { type: 'Earthy Aroma', value: 1 },
+                right: { type: 'Herbal Seasoning', value: 1 },
+                bottom: { type: 'Exotic Meat', value: 1, condition: 'Extracted at Butcher' }
+            },
+            companionBonus: 'Your Underdog Bonus (if active) grants +2 instead of +1.'
+        },
+        {
+            id: 'pepper_harpy', name: 'Pepper Harpy', tier: 2, hp: 2, atk: 2,
+            edges: {
+                top: { type: 'White Meat', value: 1 },
+                left: { type: 'Spicy Aroma', value: 1 },
+                right: { type: 'Fiery Seasoning', value: 1 },
+                bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Rushed Kill' }
+            },
+            companionBonus: 'Explore actions reveal the tile type before you commit AP (free peek).'
+        },
+
+        // --- TIER III (Round 3, HP 3-4, ATK 2-3) ---
+        {
+            id: 'sulfur_wyrm', name: 'Sulfur Wyrm', tier: 3, hp: 4, atk: 3,
+            edges: {
+                top: { type: 'Red Meat', value: 2 },
+                left: { type: 'Spicy Aroma', value: 2 },
+                right: { type: 'Fiery Seasoning', value: 2 },
+                bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Dark Hour' }
+            },
+            companionBonus: 'All your Ember-Family dishes score +1 for the rest of the game.'
+        },
+        {
+            id: 'abyss_angler', name: 'Abyss Angler', tier: 3, hp: 3, atk: 2,
+            edges: {
+                top: { type: 'Sea Meat', value: 2 },
+                left: { type: 'Salty Aroma', value: 1 },
+                right: { type: 'Mystic Seasoning', value: 2 },
+                bottom: { type: 'Sea Meat', value: 1, condition: 'Desperate Posture' }
+            },
+            companionBonus: 'Once per round, ignore a Fog card effect entirely.'
+        },
+        {
+            id: 'iron_tortoise', name: 'Iron Tortoise', tier: 3, hp: 4, atk: 2,
+            edges: {
+                top: { type: 'Exotic Meat', value: 2 },
+                left: { type: 'Salty Aroma', value: 1 },
+                right: { type: 'Mineral Seasoning', value: 2 },
+                bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Careful Kill' }
+            },
+            companionBonus: 'Failed Hunts cost you 1 less Stamina (min 0) for the rest of the game.'
+        },
+        {
+            id: 'cinder_phoenix', name: 'Cinder Phoenix', tier: 3, hp: 4, atk: 3,
+            edges: {
+                top: { type: 'Red Meat', value: 2 },
+                left: { type: 'Spicy Aroma', value: 1 },
+                right: { type: 'Fiery Seasoning', value: 2 },
+                bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Brutal Kill' }
+            },
+            companionBonus: 'Once per game, fully restore your Stamina as a free action.'
+        }
+    ],
+
+    // ================================================================
+    // FLAVOR FAMILIES — unify Harmony scoring & Spoilage under one model
+    // ================================================================
+    families: {
+        EMBER:   { name: 'Ember',   color: '#FF4500', meat: 'Red Meat',    aroma: 'Spicy Aroma',  seasoning: 'Fiery Seasoning' },
+        TIDE:    { name: 'Tide',    color: '#4A90A4', meat: 'Sea Meat',    aroma: 'Salty Aroma',   seasoning: 'Mineral Seasoning' },
+        VERDANT: { name: 'Verdant', color: '#228B22', meat: 'White Meat',  aroma: 'Earthy Aroma',  seasoning: 'Herbal Seasoning' },
+        BLOOM:   { name: 'Bloom',   color: '#9370DB', meat: 'Exotic Meat', aroma: 'Sweet Aroma',   seasoning: 'Mystic Seasoning' }
+    },
+
+    // Cross-family Spoilage pairs (unified with Family model)
+    spoilagePairs: [
+        { a: 'EMBER', b: 'BLOOM', message: '🔥 Ember ≠ 🌸 Bloom (Fiery/Spicy vs Sweet/Mystic)' },
+        { a: 'TIDE',  b: 'VERDANT', message: '🌊 Tide ≠ 🌿 Verdant (Salty/Mineral vs Earthy/Herbal)' },
+        { a: 'BLOOM', b: 'TIDE', message: '🌸 Bloom ≠ 🌊 Tide (Mystic vs Mineral)' }
+    ],
+
+    // ================================================================
+    // DISHES (36 total) — corner-scored, validated in Session 2
+    // ================================================================
+    dishes: [
+        // ============================================================
+        // STANDARD DISHES (22) — generic slots, any Family qualifies
+        // Corner formula: TL=base, TR=base+1, BL=base+2 (Expert, needs
+        // ingredientCount>=3 or it's structurally locked), BR=base+ingredientCount
+        // ============================================================
+        {
+            id: 'quick_griddle_cakes', name: 'Quick Griddle Cakes', type: 'standard',
+            requirements: { meat: 1, aroma: 1 }, ingredientCount: 2,
+            corners: { topLeft: 3, topRight: 4, bottomLeft: null, bottomRight: 5 },
+            locked: ['bottomLeft'],
+            flavorText: '"Fast, cheap, and it works." — The Off-Duty Guard'
+        },
+        {
+            id: 'simple_skewers', name: 'Simple Skewers', type: 'standard',
+            requirements: { meat: 2 }, ingredientCount: 2,
+            corners: { topLeft: 3, topRight: 4, bottomLeft: null, bottomRight: 5 },
+            locked: ['bottomLeft'],
+            flavorText: '"No fuss. Just meat on a stick." — The Caravan Guide'
+        },
+        {
+            id: 'broth_of_beginnings', name: 'Broth of Beginnings', type: 'standard',
+            requirements: { aroma: 1, seasoning: 1 }, ingredientCount: 2,
+            corners: { topLeft: 3, topRight: 4, bottomLeft: null, bottomRight: 5 },
+            locked: ['bottomLeft'],
+            flavorText: '"Every great chef starts with a good broth." — The Apprentice Cook'
+        },
+        {
+            id: 'hearty_boar_stew', name: 'Hearty Boar Stew', type: 'standard',
+            requirements: { meat: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"A bowl that tastes like home." — The Weary Watchman'
+        },
+        {
+            id: 'griffin_burger', name: 'Griffin Burger', type: 'standard',
+            requirements: { meat: 2, aroma: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Best seller at every festival stall." — The Market Vendor'
+        },
+        {
+            id: 'salted_catch_platter', name: 'Salted Catch Platter', type: 'standard',
+            requirements: { meat: 1, aroma: 2 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Smells like the docks at dawn." — The Retired Sailor'
+        },
+        {
+            id: 'peppered_roast', name: 'Peppered Roast', type: 'standard',
+            requirements: { meat: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Simple, but never boring." — The Innkeeper'
+        },
+        {
+            id: 'sky_serpent_sushi', name: 'Sky Serpent Sushi', type: 'standard',
+            requirements: { meat: 1, aroma: 1, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Delicate. Precise. Almost too pretty to eat." — The Royal Food Critic'
+        },
+        {
+            id: 'woodland_medley', name: 'Woodland Medley', type: 'standard',
+            requirements: { meat: 1, aroma: 1, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Tastes like a walk through the ruins." — The Old Ranger'
+        },
+        {
+            id: 'travelers_curry', name: "Traveler's Curry", type: 'standard',
+            requirements: { aroma: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Every region adds its own twist." — The Wandering Merchant'
+        },
+        {
+            id: 'crystal_broth', name: 'Crystal Broth', type: 'standard',
+            requirements: { meat: 1, seasoning: 2 }, ingredientCount: 3,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"You can see straight to the bottom of the bowl." — The Alchemist\'s Assistant'
+        },
+        {
+            id: 'exotic_herb_dumplings', name: 'Exotic Herb Dumplings', type: 'standard',
+            requirements: { meat: 2, aroma: 1 }, ingredientCount: 3,
+            corners: { topLeft: 5, topRight: 6, bottomLeft: 7, bottomRight: 8 },
+            flavorText: '"I want to taste every corner of the wilderness." — The Traveling Botanist'
+        },
+        {
+            id: 'banquet_ribs', name: 'Banquet Ribs', type: 'standard',
+            requirements: { meat: 3, seasoning: 1 }, ingredientCount: 4,
+            corners: { topLeft: 6, topRight: 7, bottomLeft: 8, bottomRight: 10 },
+            flavorText: '"Bring extra napkins." — The Festival Announcer'
+        },
+        {
+            id: 'grand_aromatic_medley', name: 'Grand Aromatic Medley', type: 'standard',
+            requirements: { meat: 1, aroma: 2, seasoning: 1 }, ingredientCount: 4,
+            corners: { topLeft: 6, topRight: 7, bottomLeft: 8, bottomRight: 10 },
+            flavorText: '"Every aroma the wilderness has to offer, in one bowl." — The Traveling Botanist'
+        },
+        {
+            id: 'feast_of_the_hunt', name: 'Feast of the Hunt', type: 'standard',
+            requirements: { meat: 2, aroma: 1, seasoning: 1 }, ingredientCount: 4,
+            corners: { topLeft: 6, topRight: 7, bottomLeft: 8, bottomRight: 10 },
+            flavorText: '"A dish worthy of the day\'s catch." — The Hunt Master'
+        },
+        {
+            id: 'deep_forest_platter', name: 'Deep Forest Platter', type: 'standard',
+            requirements: { aroma: 2, seasoning: 2 }, ingredientCount: 4,
+            corners: { topLeft: 6, topRight: 7, bottomLeft: 8, bottomRight: 10 },
+            flavorText: '"You can taste the moss." — The Hermit Botanist'
+        },
+        {
+            id: 'underdogs_delight', name: "Underdog's Delight", type: 'standard',
+            requirements: { meat: 1, aroma: 1 }, ingredientCount: 2,
+            corners: { topLeft: 4, topRight: 5, bottomLeft: null, bottomRight: 6 },
+            locked: ['bottomLeft'],
+            special: { rule: 'catchup_flat', text: '+2 pts if you have fewer Gourmet Points than any opponent when scored' },
+            flavorText: '"Everyone loves a comeback story." — The Tavern Regular'
+        },
+        {
+            id: 'scrappy_surprise', name: 'Scrappy Surprise', type: 'standard',
+            requirements: { meat: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 5, topRight: 6, bottomLeft: 7, bottomRight: 8 },
+            special: { rule: 'catchup_scaling', text: '+1 pt per point behind the leader (max +3)' },
+            flavorText: '"Made from whatever was left in the pantry." — The Scullery Cook'
+        },
+        {
+            id: 'master_hunters_banquet', name: "Master Hunter's Banquet", type: 'standard',
+            requirements: { meat: 2, aroma: 1, seasoning: 1 }, ingredientCount: 4,
+            corners: { topLeft: 6, topRight: 7, bottomLeft: 8, bottomRight: 10 },
+            special: { rule: 'clean_kill_bonus', text: '+1 pt per Clean-Kill ingredient used (max +3)' },
+            flavorText: '"He judges the hunter, not just the flavor." — The Royal Food Critic'
+        },
+        {
+            id: 'guardians_tribute', name: "Guardian's Tribute", type: 'standard',
+            requirements: { meat: 1, aroma: 1, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: 5, topRight: 6, bottomLeft: 7, bottomRight: 8 },
+            special: { rule: 'tame_bonus', text: '+2 pts if you have Tamed at least 1 monster this game' },
+            flavorText: '"Offered in thanks, not in conquest." — The Shrine Keeper'
+        },
+        {
+            id: 'final_course_crucible', name: 'Final Course: The Crucible', type: 'standard',
+            requirements: { meat: 2, seasoning: 2 }, ingredientCount: 4,
+            corners: { topLeft: 7, topRight: 8, bottomLeft: 9, bottomRight: 11 },
+            special: { rule: 'round_restriction', text: 'May only be completed during Round 3' },
+            flavorText: '"Where the first monster dish was ever made." — Ancient Inscription'
+        },
+        {
+            id: 'emperors_feast', name: "The Emperor's Feast", type: 'standard',
+            requirements: { meat: 2, aroma: 2, seasoning: 1 }, ingredientCount: 5,
+            corners: { topLeft: 8, topRight: 9, bottomLeft: 10, bottomRight: 13 },
+            special: { rule: 'dish_steal', text: 'Legendary: if another player already completed this dish, you score at the topLeft (No Harmony) value instead, regardless of your actual Harmony' },
+            flavorText: '"Fit for a king — but only the first cook gets the credit." — The Royal Steward'
+        },
+
+        // ============================================================
+        // SIGNATURE DISHES (8) — Family-locked, only bottomRight active.
+        // 2 dishes per Family for thematic/mechanical symmetry.
+        // ============================================================
+        {
+            id: 'inferno_meatballs', name: 'Inferno Meatballs', type: 'signature',
+            requiredFamily: 'EMBER',
+            requirements: { meat: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Only extremely spicy food is worth eating." — The Hungry Blacksmith'
+        },
+        {
+            id: 'ember_glazed_ribs', name: 'Ember-Glazed Ribs', type: 'signature',
+            requiredFamily: 'EMBER',
+            requirements: { meat: 3 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"If it doesn\'t sear, it doesn\'t count." — The Forge Cook'
+        },
+        {
+            id: 'tidewater_bisque', name: 'Tidewater Bisque', type: 'signature',
+            requiredFamily: 'TIDE',
+            requirements: { meat: 1, seasoning: 2 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Tastes like the tide going out." — The Frost Merchant'
+        },
+        {
+            id: 'deep_current_platter', name: 'Deep Current Platter', type: 'signature',
+            requiredFamily: 'TIDE',
+            requirements: { meat: 2, aroma: 2 }, ingredientCount: 4,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 11 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Everything on this plate came from below the waves." — The Frost Merchant'
+        },
+        {
+            id: 'verdant_garden_roast', name: 'Verdant Garden Roast', type: 'signature',
+            requiredFamily: 'VERDANT',
+            requirements: { meat: 2, aroma: 1 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Grown, not hunted — but no less alive." — The Herbalist'
+        },
+        {
+            id: 'herbwood_terrine', name: 'Herbwood Terrine', type: 'signature',
+            requiredFamily: 'VERDANT',
+            requirements: { meat: 1, aroma: 1, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Earthy. Grounded. Honest food." — The Herbalist'
+        },
+        {
+            id: 'bloomtide_nectar_cake', name: 'Bloomtide Nectar Cake', type: 'signature',
+            requiredFamily: 'BLOOM',
+            requirements: { aroma: 2, seasoning: 1 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"Too pretty to eat, and yet—" — The Court Alchemist'
+        },
+        {
+            id: 'mystic_petal_confection', name: 'Mystic Petal Confection', type: 'signature',
+            requiredFamily: 'BLOOM',
+            requirements: { meat: 1, aroma: 2 }, ingredientCount: 3,
+            corners: { topLeft: null, topRight: null, bottomLeft: null, bottomRight: 9 },
+            locked: ['topLeft', 'topRight', 'bottomLeft'],
+            flavorText: '"It hums faintly when you cut into it." — The Court Alchemist'
+        },
+
+        // ============================================================
+        // WILDCARD DISHES (6) — flexible, low-value safety valve.
+        // All four corners active (never locked).
+        // ============================================================
+        {
+            id: 'kitchen_sink_surprise', name: 'Kitchen Sink Surprise', type: 'wildcard',
+            requirements: { meat: 2, aroma: 1, seasoning: 1 }, ingredientCount: 4,
+            corners: { topLeft: 3, topRight: 4, bottomLeft: 5, bottomRight: 7 },
+            flavorText: '"Whatever\'s fresh. Surprise me." — Anonymous Adventurer'
+        },
+        {
+            id: 'mystery_meatball_medley', name: 'Mystery Meatball Medley', type: 'wildcard',
+            requirements: { meat: 3 }, ingredientCount: 3,
+            note: 'Must use 3 different Meat types',
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"You never know what\'s inside until you bite." — The Street Vendor'
+        },
+        {
+            id: 'aromatic_sampler', name: 'Aromatic Sampler', type: 'wildcard',
+            requirements: { aroma: 3 }, ingredientCount: 3,
+            note: 'Must use 3 different Aroma types',
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Close your eyes and guess." — The Perfumer'
+        },
+        {
+            id: 'spice_rack_special', name: 'Spice Rack Special', type: 'wildcard',
+            requirements: { seasoning: 3 }, ingredientCount: 3,
+            note: 'Must use 3 different Seasoning types',
+            corners: { topLeft: 4, topRight: 5, bottomLeft: 6, bottomRight: 7 },
+            flavorText: '"Not for the faint of tongue." — The Spice Trader'
+        },
+        {
+            id: 'quick_snack', name: 'Quick Snack', type: 'wildcard',
+            requirements: { meat: 1, aromaOrSeasoning: 1 }, ingredientCount: 2,
+            corners: { topLeft: 2, topRight: 3, bottomLeft: null, bottomRight: 4 },
+            locked: ['bottomLeft'],
+            flavorText: '"Eaten standing up, between fights." — Anonymous Adventurer'
+        },
+        {
+            id: 'exotic_experiment', name: 'Exotic Experiment', type: 'wildcard',
+            requirements: { exoticMeat: 1, any: 2 }, ingredientCount: 3,
+            note: 'Requires at least 1 Exotic Meat',
+            corners: { topLeft: 5, topRight: 6, bottomLeft: 7, bottomRight: 8 },
+            flavorText: '"I have no idea what this is. Let\'s find out." — The Reckless Chef'
+        }
+    ],
+
+    // Location Tiles (25 for 5x5 final round)
+
+
+    // ================================================================
+    // LOCATION TILES — expanded set, per-round counts
+    // ================================================================
+    locationTypes: [
+        { id: 'ruin', name: 'Ruins', type: 'monster', icon: '⚔️', introducedRound: 1 },
+        { id: 'strange', name: 'Strange Place', type: 'fog', icon: '🌫️', introducedRound: 1 },
+        { id: 'butcher', name: 'Butcher Shop', type: 'shop', icon: '🔪', introducedRound: 1 },
+        { id: 'aromaist', name: 'Aromaist Lab', type: 'shop', icon: '🧪', introducedRound: 1 },
+        { id: 'seasoning', name: 'Seasoning Mill', type: 'shop', icon: '🌶️', introducedRound: 1 },
+        { id: 'merchant', name: "Merchant's Camp", type: 'utility', icon: '🏕️', introducedRound: 2,
+            effect: 'Act here: sell excess ingredients (2:1 conversion), buy Tools, or use Ingredient Insurance.' },
+        { id: 'well', name: 'Magic Well', type: 'utility', icon: '💧', introducedRound: 2,
+            effect: 'Act here: full Stamina restore + gain 1 Reroll Token, OR cleanse one spoilage-flagged ingredient.' },
+        { id: 'watchtower', name: 'Old Watchtower', type: 'utility', icon: '🗼', introducedRound: 2,
+            effect: 'Act here: reveal 2 additional adjacent tiles for free (no AP cost).' },
+        { id: 'kitchen', name: 'Abandoned Kitchen', type: 'utility', icon: '🍳', introducedRound: 3,
+            effect: 'Act here: complete a Wildcard Dish immediately, no shop needed.' },
+        { id: 'shrine', name: 'Shrine of the Fog', type: 'utility', icon: '⛩️', introducedRound: 3,
+            effect: "Act here: peek at the Crucible's monster draw before committing, OR guarantee your next kill is Clean." },
+        { id: 'crucible', name: 'The Crucible', type: 'special', icon: '🔥', introducedRound: 3,
+            effect: 'Draw 2 monsters, choose 1. Forced Brutal kill. Any edge including Bottom. Check spoilage twice.' }
+    ],
+
+    // Location counts per round grid (must sum to grid tile total)
+    locationCounts: {
+        1: { // 3x3 = 9 tiles
+            ruin: 4, butcher: 1, aromaist: 1, seasoning: 1, strange: 2
+        },
+        2: { // 4x4 = 16 tiles
+            ruin: 6, butcher: 2, aromaist: 1, seasoning: 1, strange: 3,
+            merchant: 1, well: 1, watchtower: 1
+        },
+        3: { // 5x5 = 25 tiles
+            ruin: 9, butcher: 2, aromaist: 1, seasoning: 1, strange: 5,
+            merchant: 2, well: 1, watchtower: 1, kitchen: 1, shrine: 1, crucible: 1
+        }
+    },
+
+    // ================================================================
+    // MAP LAYOUTS — fixed positional templates, not just counts.
+    // Counts alone would let a bad shuffle cluster all shops in one
+    // corner, undermining the "shop scarcity forces route planning"
+    // design goal. Positions are pre-set; only WHICH monster/fog card
+    // sits under Ruin/Strange tiles is randomized at setup.
+    // Grid coordinates are [row][col], 0-indexed, row 0 = top.
+    // Players start at corners; corners are always Ruins (guaranteed
+    // early action, no dead first turn).
+    // ================================================================
+    mapLayouts: {
+        1: { // 3x3 — Round 1, Basic tier, always Clean
+            grid: [
+                ['ruin',     'strange',  'ruin'],
+                ['butcher',  'aromaist', 'seasoning'],
+                ['ruin',     'strange',  'ruin']
+            ],
+            designNote: 'Shops form a deliberate central row — reachable from any corner in exactly 2 moves. Teaches the Hunt→Extract loop fast with minimal travel friction. All 4 corners are Ruins so every starting player has an immediate action.'
+        },
+        2: { // 4x4 — Round 2, Standard tier, kill states begin
+            grid: [
+                ['ruin',     'strange',   'watchtower', 'ruin'],
+                ['butcher',  'ruin',      'ruin',        'aromaist'],
+                ['merchant', 'strange',   'strange',     'well'],
+                ['ruin',     'seasoning', 'butcher',     'ruin']
+            ],
+            designNote: 'Butcher (top-left region + bottom-center) and Aromaist (right edge) sit apart deliberately. Seasoning Mill remains the sole scarce shop — placed adjacent to a corner but off the natural diagonal path, making it the clearest "detour or skip" decision each game. Watchtower and Well sit on opposite top/bottom edges so scouting and resting compete for different routes rather than stacking. Corners remain Ruins.'
+        },
+        3: { // 5x5 — Round 3, Expert tier, The Crucible
+            grid: [
+                ['ruin',     'strange',   'ruin',       'strange',  'ruin'],
+                ['butcher',  'ruin',      'watchtower', 'ruin',     'aromaist'],
+                ['strange',  'merchant',  'crucible',   'ruin',     'strange'],
+                ['ruin',     'shrine',    'butcher',    'kitchen',  'merchant'],
+                ['ruin',     'seasoning', 'strange',    'well',     'ruin']
+            ],
+            designNote: 'The Crucible sits at the exact geometric center (2,2) — every starting corner is equidistant, keeping the endgame race fair regardless of starting position. Butcher and Aromaist remain on opposite edges (row 1). Seasoning Mill sits alone in the bottom row, the single hardest shop to reach efficiently — by design, the sharpest resource-planning bottleneck in the game. Shrine of the Fog sits one step from the Crucible approach (a small mercy before the highest-risk zone). Corners remain Ruins for consistency across all 3 rounds.'
+        }
+    },
+
+    // Fog Cards (12 total)
+    fogCards: [
+        { id: 'dark_hour', name: 'Dark Hour Descends', effect: 'Dark Hour begins until round end', count: 2 },
+        { id: 'miasma', name: 'Lingering Miasma', effect: 'All extractions -1 (min 1) this round', count: 2 },
+        { id: 'migration', name: 'Monster Migration', effect: 'Place facedown monster on adjacent Ruin', count: 2 },
+        { id: 'opportunity', name: 'Hidden Opportunity', effect: 'Ignore spoilage once this round', count: 1 },
+        { id: 'collapsed', name: 'Collapsed Path', effect: 'One tile blocked this round', count: 2 },
+        { id: 'false_calm', name: 'False Calm', effect: 'No effect', count: 3 }
+    ],
+
+    // Tools (6 total) — costs denominated in ingredient tokens.
+    // REVAMPED: each tool now also touches Stamina, since that's the core
+    // tempo resource introduced in Session 2. Previously tools only
+    // modified kill-state access, which left them disconnected from the
+    // game's actual moment-to-moment tension.
+    tools: [
+        {
+            id: 'net', name: 'Net',
+            cost: { type: 'any_different', count: 2 },
+            effect: 'Upgrade Rushed → Clean if monster HP ≤ 2',
+            staminaInteraction: 'No Stamina cost change — Net is about precision, not effort.',
+            flavorText: '"Slow enough to be safe, light enough to not tire your arms." — Trapper Tim'
+        },
+        {
+            id: 'spear', name: 'Spear',
+            cost: { 'Any Meat': 1, 'Any Aroma': 1 },
+            effect: 'Choose Clean OR Rushed',
+            staminaInteraction: 'If you choose Rushed with a Spear, refund 1 extra Stamina (total +2) — the reach keeps you out of danger.',
+            flavorText: '"Distance is its own kind of safety." — Hunter Hank'
+        },
+        {
+            id: 'bow', name: 'Bow',
+            cost: { 'Any Meat': 1, 'Any Seasoning': 1 },
+            effect: 'Force Rushed, ignore monster reaction',
+            staminaInteraction: 'Rushed refund (+1 Stamina) still applies as normal.',
+            flavorText: '"One shot. No wasted breath." — Tracker Tessa'
+        },
+        {
+            id: 'cleaver', name: 'Cleaver',
+            cost: { 'Any Meat': 2, 'Any Seasoning': 1 },
+            effect: 'Force Brutal',
+            staminaInteraction: 'If wielded by Butcher Bob, this simply confirms his passive (Brutal already costs him 0 Stamina). For any other character, Brutal still costs the normal 1 Stamina.',
+            flavorText: '"Not a knife. A conversation-ender." — Butcher Bob'
+        },
+        {
+            id: 'hammer', name: 'Hammer',
+            cost: { type: 'any', count: 3 },
+            effect: 'Brutal + tool exhausts after use',
+            staminaInteraction: 'Costs 1 EXTRA Stamina on top of the normal Brutal cost (2 total) — overwhelming force is exhausting even for the strong.',
+            flavorText: '"You only need to swing it once. You will only want to swing it once." — Butcher Bob'
+        },
+        {
+            id: 'trap', name: 'Trap',
+            cost: { 'Any Aroma': 1, 'Any Seasoning': 1 },
+            effect: 'Clean if monster was facedown',
+            staminaInteraction: 'Hunting a facedown (freshly revealed) monster with a Trap equipped costs 0 Stamina entirely — the trap does the work, not you.',
+            flavorText: '"Why fight the monster when you can convince it to defeat itself?" — Trapper Tim'
+        }
+    ],
+
+    // ================================================================
+    // GAME CONSTANTS
+    // ================================================================
+    constants: {
+        SPOILAGE_RULES_LEGACY_NOTE: 'Superseded by families/spoilagePairs above — kept only for old UI text references.',
+        EXOTIC_SPOILAGE: 'Exotic Meat spoils at round end if unused',
+
+        KILL_STATES: {
+            CLEAN:   { icon: '🗡️',  name: 'Clean',   effect: 'Any normal edge', staminaCost: 1 },
+            RUSHED:  { icon: '🗡️~', name: 'Rushed',  effect: 'Lowest edge only', staminaCost: 0, staminaRefund: 1 },
+            BRUTAL:  { icon: '🛠️',  name: 'Brutal',  effect: 'Any + bonus edge, check spoilage 2x', staminaCost: 1 },
+            TAMED:   { icon: '🤝',  name: 'Tamed',   effect: 'Guaranteed lowest edge, monster becomes permanent Companion, never spoils', staminaCost: 1 }
+        },
+
+        INGREDIENT_TYPES: {
+            MEATS: ['Red Meat', 'White Meat', 'Exotic Meat', 'Sea Meat'],
+            AROMAS: ['Earthy Aroma', 'Sweet Aroma', 'Spicy Aroma', 'Salty Aroma'],
+            SEASONINGS: ['Herbal Seasoning', 'Mystic Seasoning', 'Fiery Seasoning', 'Mineral Seasoning']
+        },
+
+        // Ingredient tokens: shared supply, ~8 copies of each of the 12 types
+        TOKEN_SUPPLY_PER_TYPE: 8,
+
+        ROUND_GRIDS: {
+            1: { size: 3, tiles: 9,  killStates: false, staminaActive: false, apPool: 2 },
+            2: { size: 4, tiles: 16, killStates: true,  staminaActive: true,  apPool: 3 },
+            3: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 3 }
+        },
+
+        STAMINA: {
+            defaultMax: 3,
+            huntCost: 1,
+            restRecoverPerAP: 1,
+            wellFullRestore: true,
+            atZeroStamina: 'Only Rushed or Brutal kills possible',
+            failedHuntPenalty: 'Lose Stamina equal to Monster ATK (min 1)'
+        },
+
+        AP_ACTIONS: {
+            explore: { cost: 1, effect: 'Reveal one adjacent unrevealed tile' },
+            move:    { cost: 1, effect: 'Move to an adjacent already-revealed tile' },
+            act:     { cost: 1, effect: 'Use current tile ability (Hunt, Extract, trigger Fog, etc.)' },
+            rest:    { cost: 1, effect: 'Recover +1 Stamina' }
+        },
+
+        TAME: {
+            description: 'Alternative to killing. Same success check (ATK ≥ Monster HP). On success, monster becomes a permanent Companion instead of being discarded.',
+            yieldsOnTame: 'One guaranteed lowest-value edge ingredient immediately, no spoilage risk',
+            afterTame: 'Monster never extracts again; Companion Bonus becomes active for rest of game',
+            countsToward: ['Guardian Chef ending', "Guardian's Tribute dish bonus", 'relevant End-Game Tasks']
+        },
+
+        PLAYER_COUNT_RULES: {
+            1: { rounds: [1, 2], coopOnly: true },
+            2: { rounds: [1, 2], recommended: true },
+            3: { rounds: [1, 2, 3], recommended: true },
+            4: { rounds: [1, 2, 3], useSimultaneous: true }
+        },
+
+        COOP_SETTINGS: {
+            EASY:   { festivalDishes: 6,  startingIngredients: 3, trackSpeed: 0.5 },
+            NORMAL: { festivalDishes: 8,  startingIngredients: 2, trackSpeed: 1 },
+            HARD:   { festivalDishes: 10, startingIngredients: 1, trackSpeed: 1 },
+            EXPERT: { festivalDishes: 12, startingIngredients: 0, trackSpeed: 2 }
+        }
+    }
+};
+
+// ---------------------------------------------------------------------
+// Harmony Resolution — determines which dish corner to score
+// ---------------------------------------------------------------------
+function resolveDishScore(dish, spentIngredients, expertTier = false) {
+    const familyOf = (ingredientName) => {
+        for (const [key, fam] of Object.entries(GAME_DATA.families)) {
+            if (fam.meat === ingredientName || fam.aroma === ingredientName || fam.seasoning === ingredientName) {
+                return key;
+            }
+        }
+        return null;
+    };
+
+    const familyCounts = {};
+    spentIngredients.forEach(ing => {
+        const fam = familyOf(ing);
+        if (fam) familyCounts[fam] = (familyCounts[fam] || 0) + 1;
+    });
+
+    const distinctFamilies = Object.keys(familyCounts).length;
+    const total = spentIngredients.length;
+    const maxCount = Math.max(...Object.values(familyCounts));
+    const dominantFamily = Object.keys(familyCounts).find(f => familyCounts[f] === maxCount);
+
+    if (dish.type === 'signature') {
+        const isPerfect = distinctFamilies === 1 && dominantFamily === dish.requiredFamily;
+        if (!isPerfect) {
+            return { corner: null, score: 0, valid: false,
+                      reason: `Requires all ingredients to be ${GAME_DATA.families[dish.requiredFamily].name} Family` };
+        }
+        return { corner: 'bottomRight', score: dish.corners.bottomRight, valid: true, familyBreakdown: familyCounts };
+    }
+
+    let corner;
+    if (distinctFamilies === 1) {
+        corner = 'bottomRight';
+    } else if (expertTier && distinctFamilies >= 3) {
+        corner = 'bottomLeft';
+    } else if (maxCount > total / 2) {
+        corner = 'topRight';
+    } else {
+        corner = 'topLeft';
+    }
+
+    return { corner, score: dish.corners[corner], valid: true, familyBreakdown: familyCounts };
+}
+
+// ---------------------------------------------------------------------
+// Spoilage Check — uses the same Family model as Harmony
+// ---------------------------------------------------------------------
+function checkSpoilage(inventoryIngredientNames) {
+    const familyOf = (ingredientName) => {
+        for (const [key, fam] of Object.entries(GAME_DATA.families)) {
+            if (fam.meat === ingredientName || fam.aroma === ingredientName || fam.seasoning === ingredientName) {
+                return key;
+            }
+        }
+        return null;
+    };
+    const familiesPresent = new Set(inventoryIngredientNames.map(familyOf).filter(Boolean));
+    const triggered = [];
+    GAME_DATA.spoilagePairs.forEach(pair => {
+        if (familiesPresent.has(pair.a) && familiesPresent.has(pair.b)) {
+            triggered.push(pair);
+        }
+    });
+    return triggered;
+}
+
+// ---------------------------------------------------------------------
+// Hunt Resolution — combat + Stamina cost/penalty, character passives applied
+// ---------------------------------------------------------------------
+// character: character object from GAME_DATA.characters (with any equipment/tool ATK bonus pre-added into playerAtk)
+// monster: monster object from GAME_DATA.monsters
+// currentStamina: player's current Stamina before this Hunt
+// killStateChosen: 'CLEAN' | 'RUSHED' | 'BRUTAL' | 'TAMED'
+// round: 1, 2, or 3 (Round 1 ignores Stamina entirely per Basic tier rule)
+function resolveHunt(character, playerAtk, monster, currentStamina, killStateChosen, round) {
+    const success = playerAtk >= monster.hp;
+
+    if (round === 1) {
+        // Basic tier: always Clean, no Stamina interaction at all
+        return {
+            success,
+            staminaAfter: currentStamina,
+            killState: success ? 'CLEAN' : null,
+            note: 'Round 1: Stamina inactive, always Clean on success.'
+        };
+    }
+
+    if (!success) {
+        const penalty = Math.max(1, monster.atk || 1);
+        return {
+            success: false,
+            staminaAfter: Math.max(0, currentStamina - penalty),
+            killState: null,
+            note: `Failed Hunt: lost ${penalty} Stamina (Monster ATK).`
+        };
+    }
+
+    // Determine Stamina cost for this kill state, applying character passives
+    let staminaDelta = 0;
+    const ks = GAME_DATA.constants.KILL_STATES[killStateChosen];
+    staminaDelta -= (ks.staminaCost || 0);
+    staminaDelta += (ks.staminaRefund || 0);
+
+    // Butcher Bob: Brutal free, Clean/Careful +1 extra cost
+    if (character.id === 'butcher_bob') {
+        if (killStateChosen === 'BRUTAL') staminaDelta += 1; // refunds the 1 it would have cost
+        if (killStateChosen === 'CLEAN') staminaDelta -= 1;  // extra cost
+    }
+
+    // Trapper Tim: facedown-immediate hunts ignore Stamina cost for Clean
+    // (engine-level check for "facedown immediate" happens outside this function;
+    //  this stub assumes caller passes a flag if applicable — left as an extension point)
+
+    const staminaAfter = Math.max(0, Math.min(character.maxStamina, currentStamina + staminaDelta));
+
+    return {
+        success: true,
+        staminaAfter,
+        killState: killStateChosen,
+        note: `Hunt succeeded. Stamina ${currentStamina} → ${staminaAfter}.`
+    };
+}
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { GAME_DATA, resolveDishScore, checkSpoilage, resolveHunt };
+}
+
+
+// Monster Meatball - game-engine.js
+// Session 5: Turn engine wiring AP spending, Stamina, Hunt/Tame/Extract,
+// dish completion, and round progression to the data layer built in
+// Sessions 2-3. Depends on GAME_DATA, resolveHunt, resolveDishScore,
+// checkSpoilage from game-data.js.
+//
+// In the browser, game-data.js is loaded first via a separate <script src>
+// tag (or, in the bundled standalone build, concatenated earlier in the
+// same <script> block), so GAME_DATA etc. are already in the shared global
+// scope by the time this file runs — no import needed there.
+// In Node (for testing), we fall back to require(). This MUST use property
+// assignment on the Node `global` object rather than `var`/`let`/`const`
+// declarations — declaring `var GAME_DATA` here would collide with the
+// `const GAME_DATA` from game-data.js at PARSE TIME (a SyntaxError,
+// unconditionally, regardless of whether this branch ever executes) in any
+// context where both files share one scope, such as this bundled build.
+if (typeof window === 'undefined' && typeof GAME_DATA === 'undefined') {
+    const _gd = require('./game-data.js');
+    global.GAME_DATA = _gd.GAME_DATA;
+    global.resolveDishScore = _gd.resolveDishScore;
+    global.checkSpoilage = _gd.checkSpoilage;
+    global.resolveHunt = _gd.resolveHunt;
+}
+//
+// SCOPE: Core loop (Explore/Move/Hunt/Tame/Extract/Rest/CompleteDish/EndTurn)
+// is fully implemented and tested. Utility tiles (Merchant, Kitchen, Shrine)
+// are stubbed with TODO markers — their full trade/peek UIs are future work.
+// Fog card effects are logged/applied where simple (Dark Hour flag, Miasma
+// penalty) but multi-turn effect tracking (Collapsed Path duration, etc.)
+// is simplified to "applies this round" rather than exact tile-blocking.
+
+class GameEngine {
+    constructor(playerConfigs, options = {}) {
+        // playerConfigs: [{ id, name, characterId }, ...]
+        this.mode = options.mode || 'competitive'; // 'competitive' | 'coop'
+        this.tier = options.tier || 'standard';     // 'basic' | 'standard' | 'expert'
+        this.round = 1;
+        this.log = [];
+
+        this.players = playerConfigs.map((cfg, i) => this._createPlayer(cfg, i));
+        this.currentPlayerIndex = 0;
+
+        this.darkHourActive = false;
+        this.miasmaActive = false;
+
+        this._setupRoundGrid(this.round);
+        this._buildMonsterDeck(this.round);
+
+        // Starting corner tiles must be revealed immediately — a player
+        // standing on a tile obviously knows what type it is, even before
+        // spending an Explore action. (Monster/fog CONTENTS still stay
+        // hidden until Act, per the Fog of Flavor delayed-revelation rule.)
+        this.players.forEach(p => { this.grid[p.position.row][p.position.col].revealed = true; });
+
+        // Ready the first player's turn immediately — AP starts at 0 in
+        // _createPlayer, but the actual first turn must be playable without
+        // requiring an artificial extra endTurn() call first.
+        this.players[this.currentPlayerIndex].ap = GAME_DATA.constants.ROUND_GRIDS[this.round].apPool;
+    }
+
+    // ----------------------------------------------------------------
+    // Setup helpers
+    // ----------------------------------------------------------------
+    _createPlayer(cfg, index) {
+        const character = GAME_DATA.characters.find(c => c.id === cfg.characterId);
+        if (!character) throw new Error(`Unknown character: ${cfg.characterId}`);
+
+        const baseRerolls = 2;
+        const bonusRerolls = character.startingResource?.type === 'reroll_token'
+            ? character.startingResource.count : 0;
+
+        // Assign starting corner based on player index (0=TL,1=TR,2=BL,3=BR)
+        const gridSize = GAME_DATA.constants.ROUND_GRIDS[1].size;
+        const corners = [
+            { row: 0, col: 0 }, { row: 0, col: gridSize - 1 },
+            { row: gridSize - 1, col: 0 }, { row: gridSize - 1, col: gridSize - 1 }
+        ];
+
+        return {
+            id: cfg.id,
+            name: cfg.name,
+            characterId: cfg.characterId,
+            character,
+            stamina: character.maxStamina,
+            ap: 0,
+            apMax: GAME_DATA.constants.ROUND_GRIDS[1].apPool,
+            position: corners[index % 4],
+            capturedMonsters: [],   // [{instanceId, monsterId, killState}]
+            ingredientTokens: {},   // { 'Red Meat': 2, ... }
+            companions: [],         // [monsterId, ...]
+            killLog: { CAREFUL: 0, BOLD: 0, DESPERATE: 0, TAMED: 0 },
+            gourmetPoints: 0,
+            rerollTokens: baseRerolls + bonusRerolls,
+            signaturePowerUsed: false,
+            hankFreeHuntUsedThisRound: false,
+            fogFaceUpPending: false // Tessa's constraint flag
+        };
+    }
+
+    _setupRoundGrid(round) {
+        const layout = GAME_DATA.mapLayouts[round];
+        this.grid = layout.grid.map(row =>
+            row.map(type => ({ type, revealed: false, contents: null }))
+        );
+        this.gridSize = layout.grid.length;
+    }
+
+    _buildMonsterDeck(round) {
+        let pool;
+        if (round === 1) pool = GAME_DATA.monsters.filter(m => m.tier === 1);
+        else if (round === 2) pool = GAME_DATA.monsters.filter(m => m.tier === 1 || m.tier === 2);
+        else pool = GAME_DATA.monsters.filter(m => m.tier === 2 || m.tier === 3);
+
+        this.monsterDeck = this._shuffle([...pool]);
+        this._monsterInstanceCounter = 0;
+    }
+
+    _shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    _logEvent(msg) {
+        this.log.push(`[R${this.round}] ${msg}`);
+    }
+
+    getCurrentPlayer() {
+        return this.players[this.currentPlayerIndex];
+    }
+
+    _isAdjacent(a, b) {
+        const dr = Math.abs(a.row - b.row), dc = Math.abs(a.col - b.col);
+        return (dr + dc) === 1;
+    }
+
+    _inBounds(row, col) {
+        return row >= 0 && row < this.gridSize && col >= 0 && col < this.gridSize;
+    }
+
+    // ----------------------------------------------------------------
+    // AP-costed actions
+    // ----------------------------------------------------------------
+
+    /** Explore: reveal a tile's TYPE only (no monster/fog content yet). */
+    explore(row, col) {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+        if (!this._inBounds(row, col)) return this._fail('Out of bounds.');
+        if (!this._isAdjacent(player.position, { row, col })) return this._fail('Tile is not adjacent to you.');
+
+        const tile = this.grid[row][col];
+        if (tile.revealed) return this._fail('Tile already revealed.');
+
+        tile.revealed = true;
+        player.ap -= 1;
+        this._logEvent(`${player.name} explored (${row},${col}) → revealed as ${tile.type}.`);
+        return { success: true, tileType: tile.type };
+    }
+
+    /** Move: relocate to an adjacent, already-revealed tile. */
+    move(row, col) {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+        if (!this._inBounds(row, col)) return this._fail('Out of bounds.');
+        if (!this._isAdjacent(player.position, { row, col })) return this._fail('Tile is not adjacent to you.');
+
+        const tile = this.grid[row][col];
+        if (!tile.revealed) return this._fail('Cannot move to an unrevealed tile.');
+
+        player.position = { row, col };
+        player.ap -= 1;
+        this._logEvent(`${player.name} moved to (${row},${col}).`);
+        return { success: true };
+    }
+
+    /** Rest: +1 Stamina, costs 1 AP. */
+    rest() {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+
+        const before = player.stamina;
+        player.stamina = Math.min(player.character.maxStamina, player.stamina + GAME_DATA.constants.STAMINA.restRecoverPerAP);
+        player.ap -= 1;
+        this._logEvent(`${player.name} rested: Stamina ${before} → ${player.stamina}.`);
+        return { success: true, staminaAfter: player.stamina };
+    }
+
+    /**
+     * Which kill states are currently legal for the player, given Stamina.
+     * Round 1: always just CLEAN (handled separately in hunt()).
+     */
+    getAvailableKillStates(player) {
+        if (this.round === 1) return ['CLEAN'];
+        const states = ['TAMED']; // Taming always available if you can fight at all
+        if (player.stamina > 0) {
+            states.unshift('CAREFUL');
+        }
+        states.push('BOLD', 'DESPERATE'); // always available regardless of Stamina (that's the whole point of the 0-Stamina rule)
+        return states;
+    }
+
+    /**
+     * Hunt or Tame a monster on the player's CURRENT tile (must be a Ruin,
+     * revealed, and not yet acted on this visit).
+     * killStateChoice: 'CAREFUL' | 'BOLD' | 'DESPERATE' | 'TAMED' (ignored in Round 1)
+     */
+    hunt(killStateChoice) {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+
+        const tile = this.grid[player.position.row][player.position.col];
+        if (tile.type !== 'ruin') return this._fail('Not standing on a Ruin.');
+        if (!tile.revealed) return this._fail('Tile not yet explored.');
+
+        // Draw a monster if this Ruin hasn't been engaged yet (Act = commitment)
+        if (!tile.contents) {
+            if (this.monsterDeck.length === 0) return this._fail('Monster deck exhausted.');
+            tile.contents = { monster: this.monsterDeck.pop(), instanceId: `m${++this._monsterInstanceCounter}` };
+        }
+        const monster = tile.contents.monster;
+
+        // Hank's free-hunt passive
+        let staminaOverride = null;
+        if (player.character.id === 'hunter_hank' && !player.hankFreeHuntUsedThisRound) {
+            staminaOverride = player.stamina; // resolveHunt will compute normally, we refund after
+        }
+
+        const playerAtk = player.character.baseAttack; // TODO: + equipped tool bonuses
+        const mappedState = this.round === 1 ? null : killStateChoice;
+        const result = resolveHunt(player.character, playerAtk, monster, player.stamina, mappedState, this.round);
+
+        // Apply Hank's "once per round free hunt" by refunding the Stamina delta
+        if (staminaOverride !== null && result.success) {
+            const staminaSpent = staminaOverride - result.staminaAfter;
+            if (staminaSpent > 0) {
+                result.staminaAfter = staminaOverride;
+                player.hankFreeHuntUsedThisRound = true;
+                this._logEvent(`${player.name} (Hank) used Steady Nerve — Hunt cost no Stamina.`);
+            }
+        }
+
+        player.stamina = result.staminaAfter;
+        player.ap -= 1;
+
+        if (!result.success) {
+            this._logEvent(`${player.name} failed to hunt ${monster.name}. ${result.note}`);
+            tile.contents = null; // monster flees; Ruin can be re-attempted (fresh draw) on a future Act
+            return { success: false, monster, note: result.note, staminaAfter: player.stamina };
+        }
+
+        const finalKillState = result.killState; // 'CLEAN' in Round 1, else chosen state
+        player.killLog[finalKillState] = (player.killLog[finalKillState] || 0) + 1;
+
+        if (finalKillState === 'TAMED') {
+            // Immediate guaranteed lowest-edge ingredient, monster becomes Companion, never spoils.
+            const edges = monster.edges;
+            const lowestEdge = ['top', 'left', 'right']
+                .map(k => ({ key: k, ...edges[k] }))
+                .sort((a, b) => a.value - b.value)[0];
+            this._grantIngredient(player, lowestEdge.type, lowestEdge.value);
+            player.companions.push(monster.id);
+            tile.contents = null;
+            this._logEvent(`${player.name} Tamed ${monster.name}! Gained ${lowestEdge.value}x ${lowestEdge.type}. Companion bonus: ${monster.companionBonus}`);
+            return { success: true, tamed: true, monster, ingredientGranted: lowestEdge, staminaAfter: player.stamina };
+        }
+
+        // Otherwise: captured, awaiting extraction at a shop.
+        player.capturedMonsters.push({
+            instanceId: tile.contents.instanceId,
+            monsterId: monster.id,
+            killState: finalKillState
+        });
+        tile.contents = null; // Ruin is spent once resolved (captured monster now lives in inventory)
+        this._logEvent(`${player.name} captured ${monster.name} (${finalKillState}). Awaiting extraction.`);
+        return { success: true, tamed: false, monster, killState: finalKillState, staminaAfter: player.stamina };
+    }
+
+    /**
+     * Extract: at a shop tile, convert a captured monster into ingredient tokens.
+     * shopType: 'butcher' | 'aromaist' | 'seasoning'
+     * chosenEdge: 'top' | 'left' | 'right' | 'bottom'
+     */
+    extract(capturedInstanceId, chosenEdge) {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+
+        const tile = this.grid[player.position.row][player.position.col];
+        const shopEdgeMap = { butcher: 'top', aromaist: 'left', seasoning: 'right' };
+        const isTessaSkip = player.character.id === 'tracker_tessa' && tile.type === 'ruin';
+
+        if (!isTessaSkip && !shopEdgeMap[tile.type]) {
+            return this._fail('Not standing on a shop (or eligible Ruin for Tessa).');
+        }
+
+        const capturedIndex = player.capturedMonsters.findIndex(c => c.instanceId === capturedInstanceId);
+        if (capturedIndex === -1) return this._fail('No such captured monster in inventory.');
+        const captured = player.capturedMonsters[capturedIndex];
+        const monster = GAME_DATA.monsters.find(m => m.id === captured.monsterId);
+
+        // shopEdge = null means "no shop restriction" (Tessa's Ruin-skip passive)
+        const shopEdge = isTessaSkip ? null : shopEdgeMap[tile.type];
+        const allowed = this._legalEdges(captured.killState, monster, shopEdge);
+        if (!allowed.includes(chosenEdge)) {
+            const reason = allowed.length === 0
+                ? `Careful kill locked this monster to its lowest edge, which isn't available here — try the matching shop instead.`
+                : `Kill state ${captured.killState} only permits: ${allowed.join(', ')}`;
+            return this._fail(reason);
+        }
+
+        const edgeData = monster.edges[chosenEdge];
+        if (chosenEdge === 'bottom' && edgeData.condition) {
+            const conditionMet = this._checkBonusCondition(edgeData.condition, player);
+            if (!conditionMet) return this._fail(`Bottom edge condition not met: ${edgeData.condition}`);
+        }
+
+        this._grantIngredient(player, edgeData.type, edgeData.value);
+        player.capturedMonsters.splice(capturedIndex, 1);
+        player.ap -= 1;
+
+        const spoilageHits = this._runSpoilageCheck(player, captured.killState === 'DESPERATE' ? 2 : 1);
+
+        this._logEvent(`${player.name} extracted ${edgeData.value}x ${edgeData.type} from ${monster.name} at ${tile.type}.`);
+        return { success: true, ingredientGranted: edgeData, spoilageHits, staminaAfter: player.stamina };
+    }
+
+    _lowestEdgeKey(monster) {
+        return ['top', 'left', 'right']
+            .map(k => ({ k, v: monster.edges[k].value }))
+            .sort((a, b) => a.v - b.v)[0].k;
+    }
+
+    /**
+     * shopEdge: the single edge this shop grants ('top'/'left'/'right'), or
+     * null if there is no shop restriction (Tessa's Ruin-skip passive).
+     * CAREFUL locks to the monster's globally-lowest edge regardless of shop
+     * — if that doesn't match the shop you're at, extraction fails here
+     *   (you must find the matching shop instead). This is intentional:
+     *   it's the mechanical "penalty" for playing it safe at capture time.
+     */
+    _legalEdges(killState, monster, shopEdge) {
+        const lowestKey = this._lowestEdgeKey(monster);
+
+        if (killState === 'CAREFUL') {
+            if (shopEdge === null) return [lowestKey]; // Tessa: always gets her locked edge
+            return shopEdge === lowestKey ? [lowestKey] : [];
+        }
+        if (killState === 'DESPERATE') {
+            return shopEdge === null ? ['top', 'left', 'right', 'bottom'] : [shopEdge, 'bottom'];
+        }
+        // CLEAN or BOLD
+        return shopEdge === null ? ['top', 'left', 'right'] : [shopEdge];
+    }
+
+    _checkBonusCondition(condition, player) {
+        if (condition === 'Dark Hour') return this.darkHourActive;
+        if (condition === 'Clean Kill') return true; // validated by caller context already having CLEAN
+        // Other conditions (specific kill states, tool usage) — simplified pass-through for now.
+        return true;
+    }
+
+    _grantIngredient(player, type, amount) {
+        player.ingredientTokens[type] = (player.ingredientTokens[type] || 0) + amount;
+    }
+
+    _runSpoilageCheck(player, times = 1) {
+        let allHits = [];
+        for (let i = 0; i < times; i++) {
+            const heldTypes = Object.keys(player.ingredientTokens).filter(t => player.ingredientTokens[t] > 0);
+            const hits = checkSpoilage(heldTypes);
+            hits.forEach(pair => {
+                // "Dispose of both" — discard the ENTIRE held stack of every
+                // ingredient type belonging to either conflicting Family,
+                // not just one unit. Spoilage is a type-level conflict.
+                Object.entries(GAME_DATA.families).forEach(([key, fam]) => {
+                    if (key === pair.a || key === pair.b) {
+                        [fam.meat, fam.aroma, fam.seasoning].forEach(t => {
+                            if (player.ingredientTokens[t] > 0) {
+                                delete player.ingredientTokens[t];
+                            }
+                        });
+                    }
+                });
+            });
+            if (hits.length > 0) allHits = allHits.concat(hits);
+            else break; // no more spoilage triggers, stop early even if times=2
+        }
+        if (allHits.length > 0) this._logEvent(`${player.name} spoilage triggered: ${allHits.map(h => h.message).join('; ')}`);
+        return allHits;
+    }
+
+    /** Complete a dish: spend ingredient tokens, score via corner resolution. */
+    completeDish(dishId, spentIngredientNames) {
+        const player = this.getCurrentPlayer();
+        const dish = GAME_DATA.dishes.find(d => d.id === dishId);
+        if (!dish) return this._fail('Unknown dish.');
+
+        // Verify player actually holds enough of each spent ingredient
+        const tally = {};
+        spentIngredientNames.forEach(n => tally[n] = (tally[n] || 0) + 1);
+        for (const [type, count] of Object.entries(tally)) {
+            if ((player.ingredientTokens[type] || 0) < count) {
+                return this._fail(`Not enough ${type} (have ${player.ingredientTokens[type] || 0}, need ${count}).`);
+            }
+        }
+
+        const expertTier = this.tier === 'expert';
+        const result = resolveDishScore(dish, spentIngredientNames, expertTier);
+        if (!result.valid) {
+            return this._fail(result.reason);
+        }
+
+        // Spend the tokens
+        Object.entries(tally).forEach(([type, count]) => {
+            player.ingredientTokens[type] -= count;
+            if (player.ingredientTokens[type] === 0) delete player.ingredientTokens[type];
+        });
+
+        let finalScore = result.score;
+
+        // Special-rule dishes (lightweight handling of the few that need it)
+        if (dish.special) {
+            finalScore += this._applySpecialRule(dish.special, player, result);
+        }
+
+        player.gourmetPoints += finalScore;
+        this._logEvent(`${player.name} completed "${dish.name}" via ${result.corner} → +${finalScore} pts (total ${player.gourmetPoints}).`);
+        return { success: true, corner: result.corner, score: finalScore, totalPoints: player.gourmetPoints };
+    }
+
+    _applySpecialRule(special, player, harmonyResult) {
+        const lowestOtherScore = Math.min(...this.players.filter(p => p !== player).map(p => p.gourmetPoints));
+        switch (special.rule) {
+            case 'catchup_flat':
+                return player.gourmetPoints < lowestOtherScore ? 2 : 0; // note: compares BEFORE this dish's points added
+            case 'catchup_scaling':
+                return player.gourmetPoints < lowestOtherScore
+                    ? Math.min(3, lowestOtherScore - player.gourmetPoints) : 0;
+            case 'tame_bonus':
+                return player.companions.length >= 1 ? 2 : 0;
+            case 'clean_kill_bonus':
+                return Math.min(3, player.killLog.CAREFUL || 0);
+            default:
+                return 0; // dish_steal / round_restriction require cross-player/turn-order context handled by caller UI
+        }
+    }
+
+    /** End the current player's turn; advance to next; reset their AP. */
+    endTurn() {
+        const player = this.getCurrentPlayer();
+        this._logEvent(`${player.name} ended their turn.`);
+
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+        const next = this.getCurrentPlayer();
+        next.ap = GAME_DATA.constants.ROUND_GRIDS[this.round].apPool;
+
+        return { success: true, nextPlayer: next.name };
+    }
+
+    /** Advance to the next round: new grid, refill Stamina/AP, rebuild monster deck. */
+    advanceRound() {
+        if (this.round >= 3) return this._fail('Already in final round.');
+        this.round += 1;
+        this._setupRoundGrid(this.round);
+        this._buildMonsterDeck(this.round);
+
+        this.players.forEach(p => {
+            p.stamina = p.character.maxStamina;
+            p.ap = GAME_DATA.constants.ROUND_GRIDS[this.round].apPool;
+            p.hankFreeHuntUsedThisRound = false;
+            // Reposition to corners again for the new (larger) grid
+        });
+        const corners = [
+            { row: 0, col: 0 }, { row: 0, col: this.gridSize - 1 },
+            { row: this.gridSize - 1, col: 0 }, { row: this.gridSize - 1, col: this.gridSize - 1 }
+        ];
+        this.players.forEach((p, i) => { p.position = corners[i % 4]; });
+        this.players.forEach(p => { this.grid[p.position.row][p.position.col].revealed = true; });
+
+        // Catch-up: lowest-scoring player goes first (Session 2 rule)
+        const lowestIdx = this.players.reduce((best, p, i, arr) =>
+            p.gourmetPoints < arr[best].gourmetPoints ? i : best, 0);
+        this.currentPlayerIndex = lowestIdx;
+
+        this._logEvent(`--- Round ${this.round} begins. First player: ${this.players[lowestIdx].name} ---`);
+        return { success: true, round: this.round, firstPlayer: this.players[lowestIdx].name };
+    }
+
+    /** Public UI helper: what edges WOULD be legal for a captured monster if
+     * extracted right now, at the player's current tile. Returns [] if not
+     * standing somewhere extraction is possible at all. */
+    previewLegalEdges(capturedInstanceId) {
+        const player = this.getCurrentPlayer();
+        const tile = this.grid[player.position.row][player.position.col];
+        const shopEdgeMap = { butcher: 'top', aromaist: 'left', seasoning: 'right' };
+        const isTessaSkip = player.character.id === 'tracker_tessa' && tile.type === 'ruin';
+        if (!isTessaSkip && !shopEdgeMap[tile.type]) return [];
+
+        const captured = player.capturedMonsters.find(c => c.instanceId === capturedInstanceId);
+        if (!captured) return [];
+        const monster = GAME_DATA.monsters.find(m => m.id === captured.monsterId);
+        const shopEdge = isTessaSkip ? null : shopEdgeMap[tile.type];
+        return this._legalEdges(captured.killState, monster, shopEdge);
+    }
+
+    /** Public UI helper: is the current tile a Ruin ready to Hunt/Tame? */
+    canHuntHere() {
+        const player = this.getCurrentPlayer();
+        const tile = this.grid[player.position.row][player.position.col];
+        return tile.type === 'ruin' && tile.revealed;
+    }
+
+    /** Public UI helper: can the player Extract at their current tile? */
+    canExtractHere() {
+        const player = this.getCurrentPlayer();
+        const tile = this.grid[player.position.row][player.position.col];
+        const isShop = ['butcher', 'aromaist', 'seasoning'].includes(tile.type);
+        const isTessaSkip = player.character.id === 'tracker_tessa' && tile.type === 'ruin';
+        return (isShop || isTessaSkip) && player.capturedMonsters.length > 0;
+    }
+
+    _fail(reason) {
+        return { success: false, reason };
+    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { GameEngine };
+}
+
+
+// Monster Meatball - main.js
+// Session 3: Data-driven UI renderer.
+// Scope note: this renders real GAME_DATA (characters, fixed map layouts,
+// corner-scored dishes) and provides reusable primitives (Stamina pips,
+// AP pips, dish corner rendering) that the future turn engine will call.
+// It does NOT yet implement full turn logic / AP spending / combat resolution
+// — that remains the Phase 4 game-engine.js work noted in PROJECT_STATUS.md.
+
+const FAMILY_ICON = { EMBER: '🔥', TIDE: '🌊', VERDANT: '🌿', BLOOM: '🌸' };
+const LOCATION_CATEGORY_CLASS = {
+    monster: 'tile-monster',
+    shop: 'tile-shop',
+    fog: 'tile-fog',
+    utility: 'tile-utility',
+    special: 'tile-special'
+};
+
+// ---------------------------------------------------------------------
+// Preview Nav (Play / Characters / Map / Dishes tabs)
+// ---------------------------------------------------------------------
+function initPreviewNav() {
+    const tabs = document.querySelectorAll('.preview-tab');
+    const screenMap = {
+        setup: 'setup-screen',
+        characters: 'screen-characters',
+        map: 'screen-map',
+        dishes: 'screen-dishes'
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            Object.values(screenMap).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenMap[tab.dataset.preview]);
+            if (target) target.classList.remove('hidden');
+
+            // Also hide the in-game screen if visible
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen) gameScreen.classList.add('hidden');
+        });
+    });
+}
+
+// ---------------------------------------------------------------------
+// Character Detail Screen
+// ---------------------------------------------------------------------
+function renderCharacterList() {
+    const container = document.getElementById('character-full-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    GAME_DATA.characters.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'character-full-card';
+        card.innerHTML = `
+            <h3>${c.name}</h3>
+            <div class="char-arc">${c.arc}</div>
+            <div class="char-quote">"${c.quote}"</div>
+            <div class="char-bio">${c.bio}</div>
+            <div class="char-stats">
+                <span>⚔️ ATK: <b>${c.baseAttack}</b></span>
+                <span>🔋 Max Stamina: <b>${c.maxStamina}</b></span>
+            </div>
+            <div class="char-passive"><b>Passive — ${c.passive.name}:</b> ${c.passive.text}</div>
+            <div class="char-signature"><b>⭐ ${c.signaturePower.name}</b> (1/game): ${c.signaturePower.description}</div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ---------------------------------------------------------------------
+// Map Layout Preview Screen
+// ---------------------------------------------------------------------
+function getLocationMeta(tileId) {
+    return GAME_DATA.locationTypes.find(l => l.id === tileId) || { icon: '❓', name: tileId, type: 'monster' };
+}
+
+function renderMapPreview(round) {
+    const container = document.getElementById('map-preview-grid');
+    const noteEl = document.getElementById('map-design-note');
+    if (!container) return;
+
+    const layout = GAME_DATA.mapLayouts[round];
+    const size = layout.grid.length;
+
+    container.style.gridTemplateColumns = `repeat(${size}, ${size <= 3 ? 110 : size === 4 ? 90 : 76}px)`;
+    container.style.gridTemplateRows = `repeat(${size}, ${size <= 3 ? 110 : size === 4 ? 90 : 76}px)`;
+    container.innerHTML = '';
+
+    layout.grid.forEach(row => {
+        row.forEach(tileId => {
+            const meta = getLocationMeta(tileId);
+            const tile = document.createElement('div');
+            tile.className = `location-tile ${LOCATION_CATEGORY_CLASS[meta.type] || ''}`;
+            tile.innerHTML = `<span class="tile-emoji">${meta.icon}</span><span>${meta.name}</span>`;
+            container.appendChild(tile);
+        });
+    });
+
+    if (noteEl) noteEl.textContent = layout.designNote;
+}
+
+function initMapPreview() {
+    const tabs = document.querySelectorAll('.map-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderMapPreview(parseInt(tab.dataset.round, 10));
+        });
+    });
+    renderMapPreview(1); // default
+}
+
+// ---------------------------------------------------------------------
+// Dish Gallery — Corner-Scored Cards
+// ---------------------------------------------------------------------
+function formatRequirements(dish) {
+    const parts = [];
+    if (dish.requirements.meat) parts.push(`${dish.requirements.meat} Meat`);
+    if (dish.requirements.aroma) parts.push(`${dish.requirements.aroma} Aroma`);
+    if (dish.requirements.seasoning) parts.push(`${dish.requirements.seasoning} Seasoning`);
+    if (dish.requirements.aromaOrSeasoning) parts.push(`${dish.requirements.aromaOrSeasoning} Aroma/Seasoning`);
+    if (dish.requirements.exoticMeat) parts.push(`${dish.requirements.exoticMeat} Exotic Meat`);
+    if (dish.requirements.any) parts.push(`${dish.requirements.any} Any`);
+    let text = parts.join(' + ');
+    if (dish.type === 'signature') {
+        text += ` (all ${GAME_DATA.families[dish.requiredFamily].name})`;
+    }
+    if (dish.note) text += ` — ${dish.note}`;
+    return text;
+}
+
+function renderCorner(dish, cornerKey, cssClass) {
+    const isLocked = dish.locked && dish.locked.includes(cornerKey);
+    const value = dish.corners[cornerKey];
+    const span = document.createElement('div');
+    span.className = `dish-corner ${cssClass}${isLocked ? ' locked' : ''}`;
+    span.textContent = isLocked ? '✕' : value;
+    return span;
+}
+
+function renderDishGallery() {
+    const container = document.getElementById('dish-gallery');
+    if (!container) return;
+    container.innerHTML = '';
+
+    GAME_DATA.dishes.forEach(dish => {
+        const card = document.createElement('div');
+        card.className = `dish-card type-${dish.type}`;
+
+        card.appendChild(renderCorner(dish, 'topLeft', 'top-left'));
+        card.appendChild(renderCorner(dish, 'topRight', 'top-right'));
+        card.appendChild(renderCorner(dish, 'bottomLeft', 'bottom-left'));
+        card.appendChild(renderCorner(dish, 'bottomRight', 'bottom-right'));
+
+        const name = document.createElement('div');
+        name.className = 'dish-name';
+        name.textContent = dish.name;
+        card.appendChild(name);
+
+        const req = document.createElement('div');
+        req.className = 'dish-requirements';
+        req.textContent = formatRequirements(dish);
+        card.appendChild(req);
+
+        const flavor = document.createElement('div');
+        flavor.className = 'dish-flavor';
+        flavor.textContent = dish.flavorText || '';
+        card.appendChild(flavor);
+
+        container.appendChild(card);
+    });
+}
+
+// ---------------------------------------------------------------------
+// Reusable Primitives — for the future turn engine to call directly
+// ---------------------------------------------------------------------
+
+// Renders N stamina pips into a container element, given current/max.
+function renderStaminaPips(containerEl, current, max) {
+    containerEl.innerHTML = '';
+    for (let i = 0; i < max; i++) {
+        const pip = document.createElement('span');
+        pip.className = 'stamina-pip';
+        if (i < current) {
+            pip.classList.add('filled');
+            if (current <= 1) pip.classList.add('low');
+        }
+        containerEl.appendChild(pip);
+    }
+}
+
+// Renders AP pips (spent vs remaining) into a container element.
+function renderAPPips(containerEl, spent, total) {
+    containerEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+        const pip = document.createElement('span');
+        pip.className = 'ap-pip';
+        if (i < spent) pip.classList.add('spent');
+        pip.textContent = i < spent ? '✓' : '';
+        containerEl.appendChild(pip);
+    }
+}
+
+// Renders a single ingredient token chip (used for inventory display).
+function renderTokenChip(ingredientName, count) {
+    const familyEntry = Object.entries(GAME_DATA.families).find(([key, fam]) =>
+        fam.meat === ingredientName || fam.aroma === ingredientName || fam.seasoning === ingredientName
+    );
+    const familyKey = familyEntry ? familyEntry[0] : null;
+    const color = familyKey ? GAME_DATA.families[familyKey].color : '#999';
+    const icon = familyKey ? FAMILY_ICON[familyKey] : '❓';
+
+    const chip = document.createElement('div');
+    chip.className = 'token-chip';
+    chip.style.borderColor = color;
+    chip.innerHTML = `
+        <span class="token-icon">${icon}</span>
+        <span class="token-count">×${count}</span>
+        <span class="token-name">${ingredientName}</span>
+    `;
+    return chip;
+}
+
+// Renders a Companion card (Tamed monster, permanent).
+function renderCompanionCard(monster) {
+    const card = document.createElement('div');
+    card.className = 'companion-card';
+    card.innerHTML = `
+        <b>${monster.name}</b>
+        <div class="bonus-text">${monster.companionBonus}</div>
+    `;
+    return card;
+}
+
+// ---------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    initPreviewNav();
+    renderCharacterList();
+    initMapPreview();
+    renderDishGallery();
+
+    // Demo wiring for the in-game info bar primitives (shown before any
+    // engine exists, so the header isn't empty on first paint).
+    const staminaDisplay = document.getElementById('stamina-pips-display');
+    const apDisplay = document.getElementById('ap-pips-display');
+    if (staminaDisplay) renderStaminaPips(staminaDisplay, 3, 3);
+    if (apDisplay) renderAPPips(apDisplay, 0, 2);
+
+    initSetupScreen();
+});
+
+// =======================================================================
+// SESSION 5: Interactive gameplay — wires GameEngine to the DOM.
+// =======================================================================
+
+let ENGINE = null;
+let SELECTED_TILE = null; // {row, col} chosen by clicking a tile, for Explore/Move
+
+const ALL_CHARACTER_IDS = GAME_DATA.characters.map(c => c.id);
+
+function initSetupScreen() {
+    const countButtons = document.querySelectorAll('.player-count-btn');
+    let playerCount = 2;
+
+    countButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            countButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            playerCount = parseInt(btn.dataset.count, 10);
+            renderPlayerSetup(playerCount);
+        });
+    });
+
+    renderPlayerSetup(playerCount);
+
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+        const configs = collectPlayerConfigs();
+        const errorEl = document.getElementById('setup-error');
+        if (!configs) {
+            errorEl.textContent = 'Please choose a different character for each player.';
+            return;
+        }
+        errorEl.textContent = '';
+        startGame(configs);
+    });
+}
+
+function renderPlayerSetup(count) {
+    const container = document.getElementById('player-setup');
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const row = document.createElement('div');
+        row.className = 'player-card';
+        row.innerHTML = `
+            <h3>Player ${i + 1}</h3>
+            <div class="character-selector" data-player-index="${i}">
+                ${GAME_DATA.characters.map(c => `
+                    <div class="character-option" data-char-id="${c.id}">
+                        ${c.name}<br><small>${c.role}</small>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    // Default-select distinct characters per player, then wire click toggles
+    container.querySelectorAll('.character-selector').forEach((sel, idx) => {
+        const options = sel.querySelectorAll('.character-option');
+        options[idx % options.length].classList.add('selected');
+        options.forEach(opt => {
+            opt.addEventListener('click', () => {
+                options.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+            });
+        });
+    });
+}
+
+function collectPlayerConfigs() {
+    const selectors = document.querySelectorAll('.character-selector');
+    const configs = [];
+    const usedIds = new Set();
+
+    for (const sel of selectors) {
+        const selected = sel.querySelector('.character-option.selected');
+        if (!selected) return null;
+        const charId = selected.dataset.charId;
+        if (usedIds.has(charId)) return null; // no duplicate characters
+        usedIds.add(charId);
+        const idx = parseInt(sel.dataset.playerIndex, 10);
+        const charName = GAME_DATA.characters.find(c => c.id === charId).name;
+        configs.push({ id: `p${idx + 1}`, name: `Player ${idx + 1} (${charName})`, characterId: charId });
+    }
+    return configs;
+}
+
+function startGame(configs) {
+    const tier = document.getElementById('tier-select').value;
+    const mode = document.querySelector('.mode-btn.active')?.id === 'btn-coop' ? 'coop' : 'competitive';
+    ENGINE = new GameEngine(configs, { tier, mode });
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.querySelectorAll('.preview-nav .preview-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('game-screen').classList.remove('hidden');
+
+    wireGameActions();
+    renderGameScreen();
+}
+
+// -----------------------------------------------------------------
+// Rendering the live game state from ENGINE
+// -----------------------------------------------------------------
+function renderGameScreen() {
+    if (!ENGINE) return;
+    const player = ENGINE.getCurrentPlayer();
+    const roundInfo = GAME_DATA.constants.ROUND_GRIDS[ENGINE.round];
+
+    document.getElementById('current-round').textContent = ENGINE.round;
+    document.querySelector('.grid-size').textContent = `(${roundInfo.size}×${roundInfo.size})`;
+    document.getElementById('current-player-name').textContent = player.name;
+
+    renderStaminaPips(document.getElementById('stamina-pips-display'), player.stamina, player.character.maxStamina);
+    renderAPPips(document.getElementById('ap-pips-display'), roundInfo.apPool - player.ap, roundInfo.apPool);
+
+    renderGameGrid();
+    renderPlayerStatusList();
+    renderInventory(player);
+    updateActionButtonStates();
+
+    document.getElementById('action-status').innerHTML = `<p>${ENGINE.log[ENGINE.log.length - 1] || 'Turn in progress.'}</p>`;
+}
+
+function renderGameGrid() {
+    const container = document.getElementById('game-grid');
+    const size = ENGINE.gridSize;
+    container.className = ''; // clear old grid-3x3 etc class
+    container.style.gridTemplateColumns = `repeat(${size}, ${size <= 3 ? 120 : size === 4 ? 100 : 90}px)`;
+    container.style.gridTemplateRows = `repeat(${size}, ${size <= 3 ? 120 : size === 4 ? 100 : 90}px)`;
+    container.innerHTML = '';
+
+    const player = ENGINE.getCurrentPlayer();
+
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            const tile = ENGINE.grid[r][c];
+            const div = document.createElement('div');
+            const isHere = player.position.row === r && player.position.col === c;
+            const isSelected = SELECTED_TILE && SELECTED_TILE.row === r && SELECTED_TILE.col === c;
+            const isAdjacent = (Math.abs(player.position.row - r) + Math.abs(player.position.col - c)) === 1;
+
+            div.className = 'grid-tile' + (tile.revealed ? ' flipped' : '') + (isHere ? ' player-here' : '') + (isAdjacent ? ' clickable' : '');
+            if (isSelected) div.style.boxShadow = '0 0 0 4px var(--accent-color)';
+
+            if (tile.revealed) {
+                const meta = getLocationMeta(tile.type);
+                div.innerHTML = `<span class="tile-icon">${meta.icon}</span>`;
+                div.title = meta.name;
+            } else {
+                div.innerHTML = `<span class="tile-icon">❓</span>`;
+            }
+
+            if (isAdjacent) {
+                div.addEventListener('click', () => {
+                    SELECTED_TILE = { row: r, col: c };
+                    renderGameGrid(); // re-render to show selection highlight
+                    updateActionButtonStates();
+                });
+            }
+
+            container.appendChild(div);
+        }
+    }
+}
+
+function renderPlayerStatusList() {
+    const container = document.getElementById('player-status-list');
+    container.innerHTML = '';
+    ENGINE.players.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'player-status-card' + (i === ENGINE.currentPlayerIndex ? ' active' : '');
+        div.innerHTML = `
+            <div class="player-name">${p.name}</div>
+            <div class="score">${p.gourmetPoints} pts</div>
+            <div style="font-size:0.75em;">🔋 ${p.stamina}/${p.character.maxStamina} · 🤝 ${p.companions.length} companions</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderInventory(player) {
+    // Captured monsters (pre-extraction)
+    const capturedEl = document.getElementById('captured-monsters');
+    capturedEl.innerHTML = player.capturedMonsters.length === 0
+        ? '<p style="font-size:0.8em;color:#999;">None yet.</p>'
+        : '';
+    player.capturedMonsters.forEach(c => {
+        const monster = GAME_DATA.monsters.find(m => m.id === c.monsterId);
+        const chip = document.createElement('div');
+        chip.style.cssText = 'background:#fff3cd; padding:6px; border-radius:6px; margin-bottom:4px; font-size:0.8em;';
+        chip.textContent = `${monster.name} (${c.killState})`;
+        capturedEl.appendChild(chip);
+    });
+
+    // Ingredient tokens
+    const tokenGrid = document.getElementById('ingredient-token-grid');
+    tokenGrid.innerHTML = '';
+    const entries = Object.entries(player.ingredientTokens);
+    if (entries.length === 0) {
+        tokenGrid.innerHTML = '<p style="font-size:0.8em;color:#999;">Empty.</p>';
+    } else {
+        entries.forEach(([type, count]) => tokenGrid.appendChild(renderTokenChip(type, count)));
+    }
+
+    // Companions
+    const companionEl = document.getElementById('companion-list');
+    companionEl.innerHTML = '';
+    if (player.companions.length === 0) {
+        companionEl.innerHTML = '<p style="font-size:0.8em;color:#999;">None yet.</p>';
+    } else {
+        player.companions.forEach(mid => {
+            const monster = GAME_DATA.monsters.find(m => m.id === mid);
+            companionEl.appendChild(renderCompanionCard(monster));
+        });
+    }
+
+    // Tools (static display of what's equipped/owned — no shop-buying UI yet)
+    const toolsEl = document.getElementById('tools-list');
+    const startingTool = player.character.startingResource?.type === 'tool' ? player.character.startingResource.id : null;
+    toolsEl.innerHTML = startingTool
+        ? `<div style="font-size:0.85em;">🔧 ${GAME_DATA.tools.find(t => t.id === startingTool)?.name || startingTool} (equipped)</div>`
+        : '<p style="font-size:0.8em;color:#999;">No tools equipped.</p>';
+}
+
+function updateActionButtonStates() {
+    const player = ENGINE.getCurrentPlayer();
+    const hasAP = player.ap > 0;
+
+    const exploreBtn = document.getElementById('btn-flip-tile');
+    const moveBtn = document.getElementById('btn-move');
+    const huntBtn = document.getElementById('btn-act-hunt');
+    const tameBtn = document.getElementById('btn-act-tame');
+    const extractBtn = document.getElementById('btn-open-extract');
+    const restBtn = document.getElementById('btn-rest');
+    const signatureBtn = document.getElementById('btn-use-power');
+
+    const targetIsUnrevealed = SELECTED_TILE && !ENGINE.grid[SELECTED_TILE.row][SELECTED_TILE.col].revealed;
+    const targetIsRevealed = SELECTED_TILE && ENGINE.grid[SELECTED_TILE.row][SELECTED_TILE.col].revealed;
+
+    exploreBtn.disabled = !(hasAP && targetIsUnrevealed);
+    moveBtn.disabled = !(hasAP && targetIsRevealed);
+    huntBtn.disabled = !(hasAP && ENGINE.canHuntHere());
+    tameBtn.disabled = huntBtn.disabled;
+    extractBtn.disabled = !(hasAP && ENGINE.canExtractHere());
+    restBtn.disabled = !hasAP;
+    signatureBtn.disabled = player.signaturePowerUsed;
+
+    document.getElementById('btn-complete-dish').disabled = Object.keys(player.ingredientTokens).length === 0;
+}
+
+// -----------------------------------------------------------------
+// Action wiring
+// -----------------------------------------------------------------
+function wireGameActions() {
+    document.getElementById('btn-flip-tile').addEventListener('click', () => {
+        if (!SELECTED_TILE) return;
+        const result = ENGINE.explore(SELECTED_TILE.row, SELECTED_TILE.col);
+        handleActionResult(result);
+    });
+
+    document.getElementById('btn-move').addEventListener('click', () => {
+        if (!SELECTED_TILE) return;
+        const result = ENGINE.move(SELECTED_TILE.row, SELECTED_TILE.col);
+        SELECTED_TILE = null;
+        handleActionResult(result);
+    });
+
+    document.getElementById('btn-rest').addEventListener('click', () => {
+        const result = ENGINE.rest();
+        handleActionResult(result);
+    });
+
+    document.getElementById('btn-act-hunt').addEventListener('click', () => openHuntModal(false));
+    document.getElementById('btn-act-tame').addEventListener('click', () => openHuntModal(true));
+    document.getElementById('btn-open-extract').addEventListener('click', openExtractionEntryPoint);
+
+    document.getElementById('btn-complete-dish').addEventListener('click', openDishModal);
+
+    document.getElementById('btn-end-turn').addEventListener('click', () => {
+        SELECTED_TILE = null;
+        const player = ENGINE.getCurrentPlayer();
+        if (ENGINE.round < 3 && isRoundOver()) {
+            ENGINE.advanceRound();
+        } else {
+            ENGINE.endTurn();
+        }
+        renderGameScreen();
+    });
+
+    document.getElementById('btn-cancel-hunt').addEventListener('click', () => closeModal('modal-monster'));
+    document.getElementById('btn-cancel-extraction').addEventListener('click', () => closeModal('modal-extraction'));
+    document.getElementById('btn-cancel-dish').addEventListener('click', () => closeModal('modal-dish'));
+
+    document.getElementById('toggle-ref').addEventListener('click', () => {
+        document.getElementById('quick-ref').classList.toggle('collapsed');
+    });
+}
+
+function isRoundOver() {
+    // Simplified round-end condition: every tile revealed, or monster deck empty.
+    const allRevealed = ENGINE.grid.flat().every(t => t.revealed);
+    return allRevealed || ENGINE.monsterDeck.length === 0;
+}
+
+function handleActionResult(result) {
+    if (!result.success) {
+        document.getElementById('action-status').innerHTML = `<p style="color:#c0392b;">⚠️ ${result.reason}</p>`;
+        return;
+    }
+    renderGameScreen();
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+
+// --- Hunt / Tame Modal ---
+function openHuntModal(tameOnly) {
+    const player = ENGINE.getCurrentPlayer();
+    const tile = ENGINE.grid[player.position.row][player.position.col];
+    if (!tile.contents) {
+        // Peek a monster from the deck for display purposes without committing
+        // (actual draw happens inside engine.hunt() on confirm).
+    }
+    const previewMonster = tile.contents ? tile.contents.monster : ENGINE.monsterDeck[ENGINE.monsterDeck.length - 1];
+    if (!previewMonster) {
+        document.getElementById('action-status').innerHTML = '<p style="color:#c0392b;">⚠️ No monsters remain in the deck.</p>';
+        return;
+    }
+
+    document.getElementById('player-atk').textContent = player.character.baseAttack;
+    document.getElementById('monster-hp').textContent = previewMonster.hp;
+    document.getElementById('monster-atk').textContent = previewMonster.atk;
+    document.getElementById('monster-display').innerHTML = `<h3>${previewMonster.name}</h3>`;
+
+    const available = ENGINE.getAvailableKillStates(player);
+    document.querySelectorAll('.kill-state-btn').forEach(btn => {
+        const state = btn.dataset.state;
+        const isTameBtn = state === 'TAMED';
+        btn.style.display = (tameOnly && !isTameBtn) || (!tameOnly && isTameBtn && ENGINE.round === 1) ? 'none' : '';
+        btn.disabled = ENGINE.round > 1 && !available.includes(state);
+        btn.classList.remove('selected');
+    });
+
+    let chosenState = ENGINE.round === 1 ? 'CLEAN' : null;
+    document.querySelectorAll('.kill-state-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.kill-state-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            chosenState = btn.dataset.state;
+        };
+    });
+
+    document.getElementById('btn-hunt-monster').onclick = () => {
+        const result = ENGINE.hunt(chosenState);
+        closeModal('modal-monster');
+        if (!result.success) {
+            document.getElementById('action-status').innerHTML = `<p style="color:#c0392b;">${previewMonster.name} got away! ${result.note}</p>`;
+        } else if (result.tamed) {
+            document.getElementById('action-status').innerHTML = `<p>🤝 Tamed ${result.monster.name}! Gained ${result.ingredientGranted.value}x ${result.ingredientGranted.type}.</p>`;
+        } else {
+            document.getElementById('action-status').innerHTML = `<p>⚔️ Captured ${result.monster.name} (${result.killState}). Visit a shop to extract.</p>`;
+        }
+        renderGameScreen();
+    };
+
+    document.getElementById('modal-monster').classList.remove('hidden');
+}
+
+// --- Extraction Modal ---
+function openExtractionEntryPoint() {
+    const player = ENGINE.getCurrentPlayer();
+    if (player.capturedMonsters.length === 1) {
+        openExtractionModalFor(player.capturedMonsters[0].instanceId);
+        return;
+    }
+    // Multiple captured monsters: quick inline picker before the edge modal.
+    const choice = player.capturedMonsters.map((c, i) => {
+        const m = GAME_DATA.monsters.find(mm => mm.id === c.monsterId);
+        return `${i + 1}. ${m.name} (${c.killState})`;
+    }).join('\n');
+    const pick = window.prompt(`Which captured monster to extract?\n${choice}\n\nEnter number:`);
+    const idx = parseInt(pick, 10) - 1;
+    if (idx >= 0 && idx < player.capturedMonsters.length) {
+        openExtractionModalFor(player.capturedMonsters[idx].instanceId);
+    }
+}
+
+function openExtractionModalFor(capturedInstanceId) {
+    const legalEdges = ENGINE.previewLegalEdges(capturedInstanceId);
+    const player = ENGINE.getCurrentPlayer();
+    const captured = player.capturedMonsters.find(c => c.instanceId === capturedInstanceId);
+    const monster = GAME_DATA.monsters.find(m => m.id === captured.monsterId);
+
+    document.getElementById('extraction-monster-display').innerHTML = `<h3>${monster.name}</h3><p>Kill state: ${captured.killState}</p>`;
+
+    document.querySelectorAll('.edge-btn').forEach(btn => {
+        const edge = btn.dataset.edge;
+        btn.disabled = !legalEdges.includes(edge);
+        const edgeData = monster.edges[edge];
+        btn.textContent = `${btn.dataset.edge === 'top' ? '⬆️ Top' : btn.dataset.edge === 'left' ? '⬅️ Left' : btn.dataset.edge === 'right' ? '➡️ Right' : '⬇️ Bottom'} (${edgeData.type} ×${edgeData.value})`;
+        btn.onclick = () => {
+            document.querySelectorAll('.edge-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        };
+    });
+
+    document.getElementById('btn-extract').onclick = () => {
+        const chosen = document.querySelector('.edge-btn.selected');
+        if (!chosen) return;
+        const result = ENGINE.extract(capturedInstanceId, chosen.dataset.edge);
+        closeModal('modal-extraction');
+        handleActionResult(result);
+    };
+
+    document.getElementById('modal-extraction').classList.remove('hidden');
+}
+
+// --- Dish Completion Modal ---
+function openDishModal() {
+    const player = ENGINE.getCurrentPlayer();
+    const container = document.getElementById('dish-selection');
+    container.innerHTML = '<p style="font-size:0.85em;color:#666;">Pick a dish, then choose which specific ingredients to spend for each slot.</p>';
+
+    GAME_DATA.dishes.forEach(dish => {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'border:2px solid #ddd; border-radius:8px; padding:8px; margin-bottom:8px;';
+        wrapper.innerHTML = `<b>${dish.name}</b> <span style="font-size:0.8em;color:#666;">${formatRequirements(dish)}</span>`;
+
+        const pickerRow = document.createElement('div');
+        pickerRow.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;';
+
+        const slotPickers = []; // [{selectEl, category}]
+        const addSlot = (category, count, pool) => {
+            for (let i = 0; i < count; i++) {
+                const select = document.createElement('select');
+                select.innerHTML = `<option value="">-- ${category} --</option>` +
+                    pool.filter(type => (player.ingredientTokens[type] || 0) > 0)
+                        .map(type => `<option value="${type}">${type} (have ${player.ingredientTokens[type]})</option>`).join('');
+                pickerRow.appendChild(select);
+                slotPickers.push(select);
+            }
+        };
+
+        if (dish.requirements.meat) addSlot('Meat', dish.requirements.meat, GAME_DATA.constants.INGREDIENT_TYPES.MEATS);
+        if (dish.requirements.aroma) addSlot('Aroma', dish.requirements.aroma, GAME_DATA.constants.INGREDIENT_TYPES.AROMAS);
+        if (dish.requirements.seasoning) addSlot('Seasoning', dish.requirements.seasoning, GAME_DATA.constants.INGREDIENT_TYPES.SEASONINGS);
+        if (dish.requirements.any) addSlot('Any', dish.requirements.any,
+            [...GAME_DATA.constants.INGREDIENT_TYPES.MEATS, ...GAME_DATA.constants.INGREDIENT_TYPES.AROMAS, ...GAME_DATA.constants.INGREDIENT_TYPES.SEASONINGS]);
+
+        wrapper.appendChild(pickerRow);
+
+        const tryBtn = document.createElement('button');
+        tryBtn.textContent = 'Cook';
+        tryBtn.className = 'btn-action';
+        tryBtn.style.marginTop = '6px';
+        tryBtn.onclick = () => {
+            const chosen = slotPickers.map(s => s.value);
+            if (chosen.some(v => !v)) {
+                container.insertAdjacentHTML('afterbegin', '<p style="color:#c0392b;">Fill every slot before cooking.</p>');
+                return;
+            }
+            const result = ENGINE.completeDish(dish.id, chosen);
+            closeModal('modal-dish');
+            if (!result.success) {
+                document.getElementById('action-status').innerHTML = `<p style="color:#c0392b;">${result.reason}</p>`;
+            } else {
+                document.getElementById('action-status').innerHTML = `<p>🍽️ ${dish.name} → ${result.corner} → +${result.score} pts!</p>`;
+            }
+            renderGameScreen();
+        };
+        wrapper.appendChild(tryBtn);
+        container.appendChild(wrapper);
+    });
+
+    document.getElementById('modal-dish').classList.remove('hidden');
+}
+
+</script>
+</body>
+</html>

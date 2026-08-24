@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Meatball - Board Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="game-header">
+            <h1>🍖 Monster Meatball 🍖</h1>
+            <div class="mode-selector">
+                <button id="btn-competitive" class="mode-btn active">Competitive</button>
+                <button id="btn-coop" class="mode-btn">Co-op: Feast Challenge</button>
+            </div>
+            <div class="tier-selector">
+                <label>Rules Tier:</label>
+                <select id="tier-select">
+                    <option value="basic">Basic (Round 1 - Learning)</option>
+                    <option value="standard" selected>Standard (Full Game)</option>
+                    <option value="expert">Expert (All Modules)</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Preview Navigation (Session 3: browse data before/without starting a game) -->
+        <nav class="preview-nav" style="display:flex; gap: var(--space-sm); margin-bottom: var(--space-md); justify-content:center;">
+            <button class="mode-btn preview-tab active" data-preview="setup">▶ Play</button>
+            <button class="mode-btn preview-tab" data-preview="characters">👥 Characters</button>
+            <button class="mode-btn preview-tab" data-preview="map">🗺️ Map Layouts</button>
+            <button class="mode-btn preview-tab" data-preview="dishes">🍽️ Dish Gallery</button>
+        </nav>
+
+        <!-- Character Detail Preview Screen -->
+        <div id="screen-characters" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">The Four Heroes</h2>
+            <div id="character-full-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap: var(--space-md);">
+                <!-- Rendered by main.js from GAME_DATA.characters -->
+            </div>
+        </div>
+
+        <!-- Map Layout Preview Screen -->
+        <div id="screen-map" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">Fixed Map Layouts</h2>
+            <div class="map-tabs">
+                <button class="map-tab active" data-round="1">Round 1 (3×3)</button>
+                <button class="map-tab" data-round="2">Round 2 (4×4)</button>
+                <button class="map-tab" data-round="3">Round 3 (5×5)</button>
+            </div>
+            <div id="map-preview-grid" style="display:grid; gap:6px; margin: 0 auto; justify-content:center;">
+                <!-- Rendered by main.js from GAME_DATA.mapLayouts -->
+            </div>
+            <p id="map-design-note" style="max-width:700px; margin:var(--space-md) auto; font-size:0.85em; color:#555; text-align:center;"></p>
+        </div>
+
+        <!-- Dish Gallery Preview Screen -->
+        <div id="screen-dishes" class="screen hidden">
+            <h2 style="text-align:center; color:var(--primary-color);">All 36 Dishes — Corner-Scored</h2>
+            <p style="text-align:center; font-size:0.85em; color:#666;">
+                Corners: <b>Top-Left</b>=No Harmony · <b>Top-Right</b>=Partial · <b>Bottom-Left</b>=Diverse (Expert) · <b>Bottom-Right</b>=Perfect
+            </p>
+            <div class="dish-gallery" id="dish-gallery">
+                <!-- Rendered by main.js from GAME_DATA.dishes -->
+            </div>
+        </div>
+
+        <!-- Game Setup Screen -->
+        <div id="setup-screen" class="screen">
+            <div class="setup-container">
+                <h2>Game Setup</h2>
+                
+                <div class="player-count">
+                    <label>Number of Players:</label>
+                    <div class="player-buttons">
+                        <button class="player-count-btn" data-count="1">1 (Solo)</button>
+                        <button class="player-count-btn active" data-count="2">2 ⭐</button>
+                        <button class="player-count-btn" data-count="3">3 ⭐</button>
+                        <button class="player-count-btn" data-count="4">4</button>
+                    </div>
+                </div>
+
+                <div class="player-setup" id="player-setup">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div id="setup-error" style="color:#c0392b; text-align:center; margin-bottom:var(--space-sm);"></div>
+                <button id="btn-start-game" class="btn-primary">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <!-- Game Info Bar -->
+            <div class="game-info-bar">
+                <div class="round-info">
+                    <span class="label">Round:</span>
+                    <span id="current-round" class="value">1</span>
+                    <span class="label">/ 3</span>
+                    <span class="grid-size">(3×3)</span>
+                </div>
+                
+                <div class="turn-info">
+                    <span class="label">Current Player:</span>
+                    <span id="current-player-name" class="value player-name">Player 1</span>
+                    <span class="badge" id="first-player-badge">First Player</span>
+                </div>
+
+                <div class="ap-pool">
+                    <span class="label">AP:</span>
+                    <span id="ap-pips-display"></span>
+                </div>
+
+                <div class="stamina-bar">
+                    <span class="stamina-label">🔋 Stamina:</span>
+                    <span class="stamina-pips" id="stamina-pips-display"></span>
+                </div>
+            </div>
+
+            <!-- Game Board Area -->
+            <div class="game-board-container">
+                <!-- Left Sidebar: Player Status -->
+                <aside class="player-sidebar">
+                    <h3>Players</h3>
+                    <div id="player-status-list">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <!-- Underdog Bonus Indicator -->
+                    <div id="underdog-indicator" class="underdog-box hidden">
+                        <h4>⬆️ Underdog Bonus</h4>
+                        <p id="underdog-text">Last place gets +1 extraction</p>
+                    </div>
+
+                    <!-- Co-op Dark Hour Track -->
+                    <div id="coop-track" class="coop-track hidden">
+                        <h4>🌙 Dark Hour Track</h4>
+                        <div class="track-bar">
+                            <div class="track-progress" id="dark-hour-progress"></div>
+                            <span class="track-value" id="dark-hour-value">0 / 10</span>
+                        </div>
+                        <div class="festival-dishes-remaining">
+                            <span>Festival Dishes: <strong id="festival-remaining">8</strong></span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Center: Game Grid -->
+                <main class="game-grid-area">
+                    <div id="game-grid" class="grid-3x3">
+                        <!-- Dynamically generated tiles -->
+                    </div>
+
+                    <div class="grid-legend">
+                        <span class="legend-item">🟩 = Your position</span>
+                        <span class="legend-item">🔵 = Flipped tile</span>
+                        <span class="legend-item">⬜ = Unflipped</span>
+                    </div>
+                </main>
+
+                <!-- Right Sidebar: Game State -->
+                <aside class="game-sidebar">
+                    <!-- Available Dishes -->
+                    <div class="available-dishes">
+                        <h3>🍽️ Available Dishes</h3>
+                        <div id="dish-cards-display" class="card-display">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Current Player Inventory -->
+                    <div class="player-inventory">
+                        <h3>📦 Your Inventory</h3>
+                        <div class="inventory-section">
+                            <h4>Captured Monsters <small>(not yet extracted)</small></h4>
+                            <div id="captured-monsters" class="monster-list">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>Ingredient Tokens</h4>
+                            <div id="ingredient-token-grid" class="token-grid">
+                                <!-- Dynamically populated: token-chip per type held -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>🤝 Companions <small>(Tamed — permanent)</small></h4>
+                            <div id="companion-list" class="companion-list">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h4>Tools & Tokens</h4>
+                            <div id="tools-list" class="tools-display">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="action-panel">
+                <div class="action-buttons">
+                    <button id="btn-flip-tile" class="btn-action" disabled>
+                        🎴 Explore <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-act-hunt" class="btn-action" disabled>
+                        ⚔️ Hunt <small>(1 AP + 1 Stamina)</small>
+                    </button>
+                    <button id="btn-act-tame" class="btn-action btn-tame" disabled>
+                        🤝 Tame <small>(1 AP + 1 Stamina)</small>
+                    </button>
+                    <button id="btn-open-extract" class="btn-action" disabled>
+                        🧪 Extract <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-move" class="btn-action" disabled>
+                        🚶 Move <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-rest" class="btn-action" disabled>
+                        💤 Rest <small>(1 AP, +1 Stamina)</small>
+                    </button>
+                    <button id="btn-complete-dish" class="btn-action">
+                        🍽️ Complete Dish
+                    </button>
+                    <button id="btn-use-power" class="btn-action btn-special">
+                        ⭐ Signature Power <small>(1/game)</small>
+                    </button>
+                </div>
+
+                <div class="action-status" id="action-status">
+                    <p>Select an action to begin your turn</p>
+                </div>
+
+                <button id="btn-end-turn" class="btn-end-turn">End Turn</button>
+            </div>
+        </div>
+
+        <!-- Modal for Monster Encounter -->
+        <div id="modal-monster" class="modal hidden">
+            <div class="modal-content">
+                <h2>Monster Encounter!</h2>
+                <div id="monster-display" class="monster-card-large">
+                    <!-- Monster details -->
+                </div>
+                <div class="monster-combat">
+                    <div class="combat-stats">
+                        <span>Your ATK: <strong id="player-atk">0</strong></span>
+                        <span>vs</span>
+                        <span>Monster HP: <strong id="monster-hp">0</strong></span>
+                        <span>| Monster ATK (fail penalty): <strong id="monster-atk">0</strong></span>
+                    </div>
+                    <div class="kill-state-selector">
+                        <h3>Choose Approach:</h3>
+                        <div class="kill-state-options">
+                            <button class="kill-state-btn" data-state="CAREFUL">
+                                🗡️ Careful<br>
+                                <small>Lowest edge · 1 Stamina</small>
+                            </button>
+                            <button class="kill-state-btn" data-state="BOLD">
+                                🗡️~ Bold<br>
+                                <small>Any normal edge · refunds Stamina</small>
+                            </button>
+                            <button class="kill-state-btn" data-state="DESPERATE">
+                                🛠️ Desperate<br>
+                                <small>+Bonus edge · 1 Stamina, spoilage ×2</small>
+                            </button>
+                            <button class="kill-state-btn tame-option" data-state="TAMED">
+                                🤝 Tame<br>
+                                <small>Guaranteed low edge · never spoils · becomes Companion</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-hunt-monster" class="btn-primary">Hunt Monster</button>
+                    <button id="btn-cancel-hunt" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Shop Extraction -->
+        <div id="modal-extraction" class="modal hidden">
+            <div class="modal-content">
+                <h2>Extract Ingredients</h2>
+                <div id="extraction-monster-display">
+                    <!-- Monster with edge selection -->
+                </div>
+                <div class="edge-selector">
+                    <button class="edge-btn" data-edge="top">⬆️ Top (Meat)</button>
+                    <button class="edge-btn" data-edge="left">⬅️ Left (Aroma)</button>
+                    <button class="edge-btn" data-edge="right">➡️ Right (Seasoning)</button>
+                    <button class="edge-btn" data-edge="bottom" disabled>⬇️ Bottom (Bonus)</button>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-extract" class="btn-primary">Extract</button>
+                    <button id="btn-cancel-extraction" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Dish Completion -->
+        <div id="modal-dish" class="modal hidden">
+            <div class="modal-content">
+                <h2>Complete Dish</h2>
+                <div id="dish-selection">
+                    <!-- Available dishes player can complete -->
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-confirm-dish" class="btn-primary">Complete</button>
+                    <button id="btn-cancel-dish" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reference Panel (Collapsible) -->
+        <div id="quick-ref" class="quick-ref collapsed">
+            <button id="toggle-ref" class="toggle-btn">📋 Quick Reference</button>
+            <div class="ref-content">
+                <h3>Flavor Families (Harmony + Spoilage, unified)</h3>
+                <ul>
+                    <li><span class="family-badge family-ember">🔥 Ember</span> Red Meat / Spicy / Fiery</li>
+                    <li><span class="family-badge family-tide">🌊 Tide</span> Sea Meat / Salty / Mineral</li>
+                    <li><span class="family-badge family-verdant">🌿 Verdant</span> White Meat / Earthy / Herbal</li>
+                    <li><span class="family-badge family-bloom">🌸 Bloom</span> Exotic Meat / Sweet / Mystic</li>
+                </ul>
+                <h3>Spoilage (cross-Family only)</h3>
+                <ul>
+                    <li>🔥 Ember ≠ 🌸 Bloom</li>
+                    <li>🌊 Tide ≠ 🌿 Verdant</li>
+                    <li>🌸 Bloom ≠ 🌊 Tide</li>
+                </ul>
+                <h3>Kill States (Round 2+)</h3>
+                <ul>
+                    <li>🗡️ Careful: lowest edge, 1 Stamina</li>
+                    <li>🗡️~ Bold: any edge, refunds Stamina</li>
+                    <li>🛠️ Desperate: +bonus edge, spoilage ×2</li>
+                    <li>🤝 Tame: guaranteed edge, never spoils, becomes Companion</li>
+                </ul>
+                <h3>Stamina</h3>
+                <ul>
+                    <li>Max 3 (refills each Round)</li>
+                    <li>At 0: only Bold/Desperate possible</li>
+                    <li>Failed Hunt: lose Stamina = Monster ATK</li>
+                    <li>Round 1: Stamina inactive, always Clean</li>
+                </ul>
+                <h3>Actions (AP pool: 2 in R1, 3 in R2-3)</h3>
+                <ul>
+                    <li>Explore, Move, Act, Rest — 1 AP each, any order</li>
+                </ul>
+                <h3>Dish Scoring (Corners)</h3>
+                <ul>
+                    <li>Top-Left = No Harmony</li>
+                    <li>Top-Right = Partial (majority Family)</li>
+                    <li>Bottom-Left = Diverse, Expert only (3+ Families)</li>
+                    <li>Bottom-Right = Perfect (all one Family)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-data.js"></script>
+    <script src="game-engine.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
