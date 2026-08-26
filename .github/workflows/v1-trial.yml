@@ -1,0 +1,26 @@
+name: Monster Meatball v1 Trial Matrix
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run engine regression tests
+        run: node test-engine.js
+      - name: Run 80-game trial matrix
+        run: node v1-trial-sim.js | tee v1-trial-output.txt
+      - name: Upload trial output
+        uses: actions/upload-artifact@v4
+        with:
+          name: monster-meatball-v1-trial-output
+          path: v1-trial-output.txt
