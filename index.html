@@ -821,6 +821,48 @@ body {
     opacity: 0.8;
 }
 
+/* Captured Monsters (pre-extraction, temporary) vs Companions (Tamed,
+   permanent) — SESSION 7: strengthened visual distinction per explicit
+   request that these must never look "mixed together." Captured uses an
+   amber/pending color scheme (awaiting processing); Companions uses the
+   existing teal/permanent scheme. Section containers also get a distinct
+   background tint so the difference reads at a glance, not just from text. */
+.inventory-section.captured-section {
+    background: #fffbea;
+    border-left: 4px solid #f0ad4e;
+    padding: var(--space-sm);
+    border-radius: 6px;
+}
+
+.inventory-section.companion-section {
+    background: #eafaf8;
+    border-left: 4px solid var(--secondary-color);
+    padding: var(--space-sm);
+    border-radius: 6px;
+}
+
+.captured-chip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff3cd;
+    border: 2px solid #f0ad4e;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 0.85em;
+}
+
+.captured-chip .chip-label::before {
+    content: "⏳ ";
+}
+
+.captured-chip .kill-state-tag {
+    font-size: 0.8em;
+    opacity: 0.75;
+    font-style: italic;
+}
+
 /* Companion Display (Tamed monsters — permanent, never re-extracted) */
 .companion-list {
     display: flex;
@@ -1278,8 +1320,8 @@ body {
                     <!-- Current Player Inventory -->
                     <div class="player-inventory">
                         <h3>📦 Your Inventory</h3>
-                        <div class="inventory-section">
-                            <h4>Captured Monsters <small>(not yet extracted)</small></h4>
+                        <div class="inventory-section captured-section">
+                            <h4>⏳ Captured Monsters <small>(awaiting extraction — NOT companions)</small></h4>
                             <div id="captured-monsters" class="monster-list">
                                 <!-- Dynamically populated -->
                             </div>
@@ -1290,8 +1332,9 @@ body {
                                 <!-- Dynamically populated: token-chip per type held -->
                             </div>
                         </div>
-                        <div class="inventory-section">
-                            <h4>🤝 Companions <small>(Tamed — permanent)</small></h4>
+                        <hr style="border:none; border-top:2px dashed #ccc; margin: var(--space-md) 0;">
+                        <div class="inventory-section companion-section">
+                            <h4>🤝 Companions <small>(Tamed — permanent, max 3)</small></h4>
                             <div id="companion-list" class="companion-list">
                                 <!-- Dynamically populated -->
                             </div>
@@ -1596,7 +1639,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Dark Hour' }
             },
-            companionBonus: '+1 max Stamina for the rest of the game.'
+            companionBonus: { text: '+1 max Stamina for the rest of the game.', type: 'PASSIVE', effectKey: 'maxStaminaBonus', wired: true }
         },
         {
             id: 'grumble_boar', name: 'Grumble Boar', tier: 1, hp: 2, atk: 1,
@@ -1606,7 +1649,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Red Meat', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: 'Once per round, may Rest as a free action (0 AP).'
+            companionBonus: { text: 'Once per round, may Rest as a free action (0 AP).', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'freeRest', wired: true }
         },
         {
             id: 'tide_eel', name: 'Tide Eel', tier: 1, hp: 1, atk: 1,
@@ -1616,7 +1659,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Extracted at Butcher' }
             },
-            companionBonus: 'Ignore spoilage once per round for the rest of the game.'
+            companionBonus: { text: 'Once per round, may grant yourself one Spoilage-immunity charge.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'grantSpoilageCharge', wired: true }
         },
         {
             id: 'moss_stag', name: 'Moss Stag', tier: 1, hp: 1, atk: 1,
@@ -1626,7 +1669,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: '+1 AP on any turn you also Rest.'
+            companionBonus: { text: '+1 AP on any turn you also Rest.', type: 'PASSIVE', effectKey: 'apBonusOnRest', wired: false }
         },
         {
             id: 'ember_crab', name: 'Ember Crab', tier: 1, hp: 2, atk: 1,
@@ -1636,7 +1679,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Red Meat', value: 1, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Your Brutal kills only check spoilage once (not twice) for the rest of the game.'
+            companionBonus: { text: 'Your Desperate extractions only check Spoilage once (not twice) for the rest of the game.', type: 'PASSIVE', effectKey: 'desperateSingleCheck', wired: true }
         },
         {
             id: 'bristle_yak', name: 'Bristle Yak', tier: 1, hp: 2, atk: 1,
@@ -1646,7 +1689,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'White Meat', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: 'Rest recovers +2 Stamina instead of +1, for the rest of the game.'
+            companionBonus: { text: 'Rest recovers +2 Stamina instead of +1, for the rest of the game.', type: 'PASSIVE', effectKey: 'enhancedRest', wired: true }
         },
         {
             id: 'candy_slime', name: 'Candy Slime', tier: 1, hp: 1, atk: 1,
@@ -1656,7 +1699,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 1 },
                 bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
             },
-            companionBonus: 'Gain 1 Reroll Token immediately when Tamed.'
+            companionBonus: { text: 'Gain 1 Reroll Token immediately when Tamed.', type: 'IMMEDIATE', effectKey: 'grantRerollToken', wired: true }
         },
 
         // --- TIER II (Round 2, HP 2-3, ATK 1-2) ---
@@ -1668,7 +1711,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Mystic Seasoning', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: '+1 Reroll Token immediately.'
+            companionBonus: { text: '+1 Reroll Token immediately.', type: 'IMMEDIATE', effectKey: 'grantRerollToken', wired: true }
         },
         {
             id: 'rock_golem', name: 'Rock Golem', tier: 2, hp: 3, atk: 2,
@@ -1678,7 +1721,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 2 },
                 bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Extracted at Seasoning Mill' }
             },
-            companionBonus: '+1 max AP on turns you do not Hunt.'
+            companionBonus: { text: '+1 max AP on turns you do not Hunt.', type: 'PASSIVE', effectKey: 'apBonusOnNoHunt', wired: false }
         },
         {
             id: 'river_leviathan', name: 'River Leviathan', tier: 2, hp: 3, atk: 2,
@@ -1688,7 +1731,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 1 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Net used' }
             },
-            companionBonus: 'Once per round, treat a Rushed kill as Clean.'
+            companionBonus: { text: 'Once per round, treat a Bold kill as Careful-tier access.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'nextBoldAsCareful', wired: false }
         },
         {
             id: 'pearl_manta', name: 'Pearl Manta', tier: 2, hp: 2, atk: 1,
@@ -1698,7 +1741,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
             },
-            companionBonus: 'Immune to the Ember≠Bloom spoilage pair only, for the rest of the game.'
+            companionBonus: { text: 'Immune to the Ember≠Bloom spoilage pair only, for the rest of the game.', type: 'PASSIVE', effectKey: 'emberBloomImmune', wired: true }
         },
         {
             id: 'mirror_kitsune', name: 'Mirror Kitsune', tier: 2, hp: 3, atk: 2,
@@ -1708,7 +1751,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).'
+            companionBonus: { text: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).', type: 'ACTIVE_ONCE_PER_GAME', effectKey: 'copyDish', wired: false }
         },
         {
             id: 'spore_shambler', name: 'Spore Shambler', tier: 2, hp: 2, atk: 1,
@@ -1718,7 +1761,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 2 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Careful Kill' }
             },
-            companionBonus: 'Wildcard dishes score +1 for the rest of the game.'
+            companionBonus: { text: 'Wildcard dishes score +1 for the rest of the game.', type: 'PASSIVE', effectKey: 'wildcardBonus', wired: false }
         },
         {
             id: 'frost_owlbear', name: 'Frost Owlbear', tier: 2, hp: 3, atk: 2,
@@ -1728,7 +1771,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'White Meat', value: 1, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Once per round, Move for free (0 AP).'
+            companionBonus: { text: 'Once per round, Move for free (0 AP).', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'freeMove', wired: true }
         },
         {
             id: 'thorn_basilisk', name: 'Thorn Basilisk', tier: 2, hp: 3, atk: 2,
@@ -1738,7 +1781,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Extracted at Butcher' }
             },
-            companionBonus: 'Your Underdog Bonus (if active) grants +2 instead of +1.'
+            companionBonus: { text: 'Your Underdog Bonus (if active) grants +2 instead of +1.', type: 'PASSIVE', effectKey: 'enhancedUnderdog', wired: false }
         },
         {
             id: 'pepper_harpy', name: 'Pepper Harpy', tier: 2, hp: 2, atk: 2,
@@ -1748,7 +1791,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: 'Explore actions reveal the tile type before you commit AP (free peek).'
+            companionBonus: { text: 'Explore actions reveal the tile type before you commit AP (free peek).', type: 'PASSIVE', effectKey: 'freePeek', wired: false }
         },
 
         // --- TIER III (Round 3, HP 3-4, ATK 2-3) ---
@@ -1760,7 +1803,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 2 },
                 bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Dark Hour' }
             },
-            companionBonus: 'All your Ember-Family dishes score +1 for the rest of the game.'
+            companionBonus: { text: 'Immediately gain 2 Reroll Tokens.', type: 'IMMEDIATE', effectKey: 'grantRerollTokens2', wired: true }
         },
         {
             id: 'abyss_angler', name: 'Abyss Angler', tier: 3, hp: 3, atk: 2,
@@ -1770,7 +1813,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Desperate Posture' }
             },
-            companionBonus: 'Once per round, ignore a Fog card effect entirely.'
+            companionBonus: { text: 'Immediately clears Dark Hour and Miasma for the rest of this round.', type: 'IMMEDIATE', effectKey: 'clearFogEffects', wired: true }
         },
         {
             id: 'iron_tortoise', name: 'Iron Tortoise', tier: 3, hp: 4, atk: 2,
@@ -1780,7 +1823,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 2 },
                 bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Careful Kill' }
             },
-            companionBonus: 'Failed Hunts cost you 1 less Stamina (min 0) for the rest of the game.'
+            companionBonus: { text: 'Immediately restore your Stamina to maximum.', type: 'IMMEDIATE', effectKey: 'fullStaminaRestore', wired: true }
         },
         {
             id: 'cinder_phoenix', name: 'Cinder Phoenix', tier: 3, hp: 4, atk: 3,
@@ -1790,7 +1833,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 2 },
                 bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Once per game, fully restore your Stamina as a free action.'
+            companionBonus: { text: 'Immediately gain +1 to your maximum Companion slots for the rest of the game.', type: 'IMMEDIATE', effectKey: 'expandCompanionCap', wired: true }
         }
     ],
 
@@ -2105,32 +2148,70 @@ const GAME_DATA = {
             effect: 'Draw 2 monsters, choose 1. Forced Brutal kill. Any edge including Bottom. Check spoilage twice.' }
     ],
 
-    // Location counts per round grid (must sum to grid tile total)
+    // Location counts per round grid — SESSION 6: bumped up one size step
+    // (4x4/5x5/6x6 instead of 3x3/4x4/5x5), motivated by the simulation
+    // finding that turns-per-player collapses badly at higher player counts
+    // on small maps. Also gives Aromaist/Seasoning Mill a 2nd copy at
+    // Round 3 (previously stuck at 1 forever, a bottleneck rather than
+    // tension once maps this size), and phases utility tiles in from
+    // Round 1 instead of Round 2.
     locationCounts: {
-        1: { // 3x3 = 9 tiles
-            ruin: 4, butcher: 1, aromaist: 1, seasoning: 1, strange: 2
+        1: { // 4x4 = 16 tiles
+            ruin: 7, butcher: 1, aromaist: 1, seasoning: 1, strange: 4,
+            merchant: 1, well: 1
         },
-        2: { // 4x4 = 16 tiles
-            ruin: 6, butcher: 2, aromaist: 1, seasoning: 1, strange: 3,
-            merchant: 1, well: 1, watchtower: 1
+        2: { // 5x5 = 25 tiles
+            ruin: 10, butcher: 2, aromaist: 1, seasoning: 1, strange: 5,
+            merchant: 2, well: 1, watchtower: 1, kitchen: 1, shrine: 1
         },
-        3: { // 5x5 = 25 tiles
-            ruin: 9, butcher: 2, aromaist: 1, seasoning: 1, strange: 5,
-            merchant: 2, well: 1, watchtower: 1, kitchen: 1, shrine: 1, crucible: 1
+        3: { // 6x6 = 36 tiles
+            ruin: 15, butcher: 2, aromaist: 2, seasoning: 2, strange: 6,
+            merchant: 2, well: 2, watchtower: 2, kitchen: 1, shrine: 1, crucible: 1
         }
     },
 
     // ================================================================
-    // MAP LAYOUTS — fixed positional templates, not just counts.
-    // Counts alone would let a bad shuffle cluster all shops in one
-    // corner, undermining the "shop scarcity forces route planning"
-    // design goal. Positions are pre-set; only WHICH monster/fog card
-    // sits under Ruin/Strange tiles is randomized at setup.
-    // Grid coordinates are [row][col], 0-indexed, row 0 = top.
-    // Players start at corners; corners are always Ruins (guaranteed
-    // early action, no dead first turn).
+    // RANDOM MAP GENERATION — SESSION 6: replaces the old fixed
+    // mapLayouts templates. Maps are randomized each game; only the 4
+    // corners are guaranteed Ruins (every player gets an immediate first
+    // action). Everything else is shuffled from the counts above.
     // ================================================================
-    mapLayouts: {
+    generateRandomLayout(round) {
+        const counts = { ...this.locationCounts[round] };
+        const size = this.constants.ROUND_GRIDS[round].size;
+        const totalTiles = size * size;
+
+        // Reserve the 4 corners as Ruin, remove them from the shuffle pool
+        counts.ruin -= 4;
+
+        const pool = [];
+        Object.entries(counts).forEach(([type, count]) => {
+            for (let i = 0; i < count; i++) pool.push(type);
+        });
+
+        // Fisher-Yates shuffle
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+
+        const grid = [];
+        let poolIndex = 0;
+        for (let r = 0; r < size; r++) {
+            const row = [];
+            for (let c = 0; c < size; c++) {
+                const isCorner = (r === 0 || r === size - 1) && (c === 0 || c === size - 1);
+                row.push(isCorner ? 'ruin' : pool[poolIndex++]);
+            }
+            grid.push(row);
+        }
+        return grid;
+    },
+
+    // Old fixed mapLayouts templates — DEPRECATED, superseded by
+    // generateRandomLayout() above. Kept only for historical reference;
+    // no code reads this anymore.
+    _mapLayoutsLegacy_UNUSED: {
         1: { // 3x3 — Round 1, Basic tier, always Clean
             grid: [
                 ['ruin',     'strange',  'ruin'],
@@ -2214,8 +2295,9 @@ const GAME_DATA = {
         {
             id: 'trap', name: 'Trap',
             cost: { 'Any Aroma': 1, 'Any Seasoning': 1 },
-            effect: 'Clean if monster was facedown',
+            effect: 'Careful if monster was facedown',
             staminaInteraction: 'Hunting a facedown (freshly revealed) monster with a Trap equipped costs 0 Stamina entirely — the trap does the work, not you.',
+            tameBonus: 2, // SESSION 10: +2 effective ATK specifically for Tame attempts — a net/trap is the archetypal live-capture tool, thematically the natural fit
             flavorText: '"Why fight the monster when you can convince it to defeat itself?" — Trapper Tim'
         }
     ],
@@ -2228,10 +2310,10 @@ const GAME_DATA = {
         EXOTIC_SPOILAGE: 'Exotic Meat spoils at round end if unused',
 
         KILL_STATES: {
-            CLEAN:   { icon: '🗡️',  name: 'Clean',   effect: 'Any normal edge', staminaCost: 1 },
-            RUSHED:  { icon: '🗡️~', name: 'Rushed',  effect: 'Lowest edge only', staminaCost: 0, staminaRefund: 1 },
-            BRUTAL:  { icon: '🛠️',  name: 'Brutal',  effect: 'Any + bonus edge, check spoilage 2x', staminaCost: 1 },
-            TAMED:   { icon: '🤝',  name: 'Tamed',   effect: 'Guaranteed lowest edge, monster becomes permanent Companion, never spoils', staminaCost: 1 }
+            CAREFUL:  { icon: '🗡️',  name: 'Careful',  effect: 'Locked to lowest edge only', staminaCost: 1 },
+            BOLD:     { icon: '🗡️~', name: 'Bold',     effect: 'Normal edge at whichever shop you extract at', staminaCost: 0, staminaRefund: 1 },
+            DESPERATE:{ icon: '🛠️',  name: 'Desperate',effect: 'Normal edge or Bottom bonus, check spoilage 2x', staminaCost: 1 },
+            TAMED:    { icon: '🤝',  name: 'Tamed',    effect: 'Guaranteed lowest edge, monster becomes permanent Companion, never spoils', staminaCost: 1 }
         },
 
         INGREDIENT_TYPES: {
@@ -2243,10 +2325,43 @@ const GAME_DATA = {
         // Ingredient tokens: shared supply, ~8 copies of each of the 12 types
         TOKEN_SUPPLY_PER_TYPE: 8,
 
+        // SESSION 7: Companion Type System
+        // - Cap: at most 3 PERMANENT Companions per hero at once.
+        // - Type/conflict: a Companion's "type" is the dominant Flavor
+        //   Family among its monster's top/left/right edges (majority
+        //   vote — verified no monster produces a 3-way tie). A hero
+        //   cannot hold two Companions whose Families conflict (same
+        //   pairs as Spoilage: Ember≠Bloom, Tide≠Verdant, Bloom≠Tide).
+        // - Behavior split by monster tier:
+        //     Tier I/II  -> PASSIVE: permanent, occupies one of the 3
+        //                   slots, subject to the Family-conflict rule.
+        //     Tier III   -> ONE_SHOT: grants its bonus once immediately,
+        //                   then the monster DEPARTS (never occupies a
+        //                   slot, never subject to the conflict rule,
+        //                   since it doesn't stick around to conflict
+        //                   with anything). Recorded in a separate
+        //                   history list for ending/scoring purposes.
+        MAX_COMPANIONS: 3,
+
+        // SESSION 8: the actual per-Ruin hunt cap, moved from bot-simulation-only
+        // enforcement (simulate.js) into the real engine, where it always should
+        // have lived. Without this, a player can camp a single Ruin indefinitely.
+        RUIN_HUNT_CAP: 3,
+
+        // SESSION 10: Taming requires a HIGHER ATK threshold than killing —
+        // subduing a monster alive is harder than simply defeating it.
+        // Without tool help, this is severe: base ATK values are 3/2/1/2
+        // across the 4 characters, and the weakest monster is HP 1, so
+        // only Butcher Bob (ATK 3) can Tame anything at all unassisted
+        // (and only the 3 weakest Tier I monsters). Everyone else needs
+        // the Trap tool's tameBonus (see tools array) or a future
+        // equivalent to ever Tame anything.
+        TAME_ATK_BUFFER: 2,
+
         ROUND_GRIDS: {
-            1: { size: 3, tiles: 9,  killStates: false, staminaActive: false, apPool: 2 },
-            2: { size: 4, tiles: 16, killStates: true,  staminaActive: true,  apPool: 3 },
-            3: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 3 }
+            1: { size: 4, tiles: 16, killStates: false, staminaActive: false, apPool: 2 },
+            2: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 3 },
+            3: { size: 6, tiles: 36, killStates: true,  staminaActive: true,  apPool: 3 }
         },
 
         STAMINA: {
@@ -2338,6 +2453,30 @@ function resolveDishScore(dish, spentIngredients, expertTier = false) {
 // ---------------------------------------------------------------------
 // Spoilage Check — uses the same Family model as Harmony
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Companion Family — dominant Family among a monster's top/left/right
+// edges (majority vote). Used for the Companion conflict rule (Session 7).
+// Verified via a one-time check that no monster among the current 20
+// produces a 3-way tie across 3 different Families; ties are still
+// handled defensively by falling back to the top edge's Family.
+// ---------------------------------------------------------------------
+function getCompanionFamily(monster) {
+    const familyOf = (ingredientName) => {
+        for (const [key, fam] of Object.entries(GAME_DATA.families)) {
+            if (fam.meat === ingredientName || fam.aroma === ingredientName || fam.seasoning === ingredientName) {
+                return key;
+            }
+        }
+        return null;
+    };
+    const fams = ['top', 'left', 'right'].map(k => familyOf(monster.edges[k].type));
+    const counts = {};
+    fams.forEach(f => { if (f) counts[f] = (counts[f] || 0) + 1; });
+    const maxCount = Math.max(...Object.values(counts));
+    const winners = Object.keys(counts).filter(k => counts[k] === maxCount);
+    return winners.length === 1 ? winners[0] : fams[0]; // defensive tiebreak, not expected to trigger
+}
+
 function checkSpoilage(inventoryIngredientNames) {
     const familyOf = (ingredientName) => {
         for (const [key, fam] of Object.entries(GAME_DATA.families)) {
@@ -2363,18 +2502,25 @@ function checkSpoilage(inventoryIngredientNames) {
 // character: character object from GAME_DATA.characters (with any equipment/tool ATK bonus pre-added into playerAtk)
 // monster: monster object from GAME_DATA.monsters
 // currentStamina: player's current Stamina before this Hunt
-// killStateChosen: 'CLEAN' | 'RUSHED' | 'BRUTAL' | 'TAMED'
+// killStateChosen: 'CAREFUL' | 'BOLD' | 'DESPERATE' | 'TAMED'
 // round: 1, 2, or 3 (Round 1 ignores Stamina entirely per Basic tier rule)
 function resolveHunt(character, playerAtk, monster, currentStamina, killStateChosen, round) {
-    const success = playerAtk >= monster.hp;
+    // SESSION 10: Taming requires ATK >= HP + buffer (harder than a normal
+    // kill, which only needs ATK >= HP) — subduing something alive is a
+    // higher bar than defeating it. Round 1 never offers Tame at all
+    // (Basic tier is always Careful), so this only matters Round 2+.
+    const requiredAtk = killStateChosen === 'TAMED'
+        ? monster.hp + GAME_DATA.constants.TAME_ATK_BUFFER
+        : monster.hp;
+    const success = playerAtk >= requiredAtk;
 
     if (round === 1) {
-        // Basic tier: always Clean, no Stamina interaction at all
+        // Basic tier: always Careful, no Stamina interaction at all
         return {
             success,
             staminaAfter: currentStamina,
-            killState: success ? 'CLEAN' : null,
-            note: 'Round 1: Stamina inactive, always Clean on success.'
+            killState: success ? 'CAREFUL' : null,
+            note: 'Round 1: Stamina inactive, always Careful on success.'
         };
     }
 
@@ -2394,13 +2540,13 @@ function resolveHunt(character, playerAtk, monster, currentStamina, killStateCho
     staminaDelta -= (ks.staminaCost || 0);
     staminaDelta += (ks.staminaRefund || 0);
 
-    // Butcher Bob: Brutal free, Clean/Careful +1 extra cost
+    // Butcher Bob: Desperate free, Careful +1 extra cost
     if (character.id === 'butcher_bob') {
-        if (killStateChosen === 'BRUTAL') staminaDelta += 1; // refunds the 1 it would have cost
-        if (killStateChosen === 'CLEAN') staminaDelta -= 1;  // extra cost
+        if (killStateChosen === 'DESPERATE') staminaDelta += 1; // refunds the 1 it would have cost
+        if (killStateChosen === 'CAREFUL') staminaDelta -= 1;  // extra cost
     }
 
-    // Trapper Tim: facedown-immediate hunts ignore Stamina cost for Clean
+    // Trapper Tim: facedown-immediate hunts ignore Stamina cost for Careful
     // (engine-level check for "facedown immediate" happens outside this function;
     //  this stub assumes caller passes a flag if applicable — left as an extension point)
 
@@ -2416,7 +2562,7 @@ function resolveHunt(character, playerAtk, monster, currentStamina, killStateCho
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { GAME_DATA, resolveDishScore, checkSpoilage, resolveHunt };
+    module.exports = { GAME_DATA, resolveDishScore, checkSpoilage, resolveHunt, getCompanionFamily };
 }
 
 
@@ -2427,21 +2573,17 @@ if (typeof module !== 'undefined' && module.exports) {
 // checkSpoilage from game-data.js.
 //
 // In the browser, game-data.js is loaded first via a separate <script src>
-// tag (or, in the bundled standalone build, concatenated earlier in the
-// same <script> block), so GAME_DATA etc. are already in the shared global
-// scope by the time this file runs — no import needed there.
-// In Node (for testing), we fall back to require(). This MUST use property
-// assignment on the Node `global` object rather than `var`/`let`/`const`
-// declarations — declaring `var GAME_DATA` here would collide with the
-// `const GAME_DATA` from game-data.js at PARSE TIME (a SyntaxError,
-// unconditionally, regardless of whether this branch ever executes) in any
-// context where both files share one scope, such as this bundled build.
+// tag, so GAME_DATA etc. are already in the shared global scope by the
+// time this file runs — no import needed there.
+// In Node (for testing), we fall back to require() since these are
+// separate CommonJS modules with no shared global by default.
 if (typeof window === 'undefined' && typeof GAME_DATA === 'undefined') {
     const _gd = require('./game-data.js');
     global.GAME_DATA = _gd.GAME_DATA;
     global.resolveDishScore = _gd.resolveDishScore;
     global.checkSpoilage = _gd.checkSpoilage;
     global.resolveHunt = _gd.resolveHunt;
+    global.getCompanionFamily = _gd.getCompanionFamily;
 }
 //
 // SCOPE: Core loop (Explore/Move/Hunt/Tame/Extract/Rest/CompleteDish/EndTurn)
@@ -2467,6 +2609,7 @@ class GameEngine {
 
         this._setupRoundGrid(this.round);
         this._buildMonsterDeck(this.round);
+        this._buildFogDeck();
 
         // Starting corner tiles must be revealed immediately — a player
         // standing on a tile obviously knows what type it is, even before
@@ -2484,8 +2627,18 @@ class GameEngine {
     // Setup helpers
     // ----------------------------------------------------------------
     _createPlayer(cfg, index) {
-        const character = GAME_DATA.characters.find(c => c.id === cfg.characterId);
-        if (!character) throw new Error(`Unknown character: ${cfg.characterId}`);
+        const characterTemplate = GAME_DATA.characters.find(c => c.id === cfg.characterId);
+        if (!characterTemplate) throw new Error(`Unknown character: ${cfg.characterId}`);
+        // SESSION 10: clone per-player, rather than sharing a direct reference
+        // to GAME_DATA.characters. Found via a real test failure: since JS
+        // object references are shared, one player mutating e.g.
+        // player.character.baseAttack (a pattern used throughout the test
+        // suite to isolate combat math from other logic) would silently
+        // leak into every OTHER player/engine using the same character,
+        // including in entirely separate test cases run later in the same
+        // process. Cloning here closes that off at the root rather than
+        // requiring every test site to remember to restore its mutation.
+        const character = { ...characterTemplate, startingResource: { ...characterTemplate.startingResource } };
 
         const baseRerolls = 2;
         const bonusRerolls = character.startingResource?.type === 'reroll_token'
@@ -2507,24 +2660,33 @@ class GameEngine {
             ap: 0,
             apMax: GAME_DATA.constants.ROUND_GRIDS[1].apPool,
             position: corners[index % 4],
+            roundStartPosition: { ...corners[index % 4] },
             capturedMonsters: [],   // [{instanceId, monsterId, killState}]
             ingredientTokens: {},   // { 'Red Meat': 2, ... }
-            companions: [],         // [monsterId, ...]
+            companions: [],         // [monsterId, ...] — PERMANENT (Tier I/II) only, max 3
+            departedCompanions: [], // [monsterId, ...] — ONE_SHOT (Tier III), history only, no ongoing slot
+            spoilageImmunityCharges: 0, // SESSION 8: from Hidden Opportunity Fog card
+            crucibleUsedThisRound: false, // SESSION 9: prevents one player draining the shared deck
+            maxCompanionsBonus: 0, // SESSION 9: Cinder Phoenix can permanently expand this
+            companionAbilityUsedThisRound: {}, // SESSION 9: {monsterId: true} for ACTIVE_ONCE_PER_ROUND abilities
+            freeMoveAvailable: false, // SESSION 9: set by Frost Owlbear's ability, consumed by the next move()
             killLog: { CAREFUL: 0, BOLD: 0, DESPERATE: 0, TAMED: 0 },
             gourmetPoints: 0,
             rerollTokens: baseRerolls + bonusRerolls,
             signaturePowerUsed: false,
             hankFreeHuntUsedThisRound: false,
-            fogFaceUpPending: false // Tessa's constraint flag
+            fogFaceUpPending: false, // Tessa's constraint flag
+            reachedBorderThisRound: false, // SESSION 6: new round-end condition
+            actionsThisTurn: {} // SESSION 6: same action max 2x per turn (see _checkActionCap)
         };
     }
 
     _setupRoundGrid(round) {
-        const layout = GAME_DATA.mapLayouts[round];
-        this.grid = layout.grid.map(row =>
+        const grid2d = GAME_DATA.generateRandomLayout(round);
+        this.grid = grid2d.map(row =>
             row.map(type => ({ type, revealed: false, contents: null }))
         );
-        this.gridSize = layout.grid.length;
+        this.gridSize = grid2d.length;
     }
 
     _buildMonsterDeck(round) {
@@ -2535,6 +2697,23 @@ class GameEngine {
 
         this.monsterDeck = this._shuffle([...pool]);
         this._monsterInstanceCounter = 0;
+    }
+
+    /**
+     * SESSION 8: builds the 12-card Fog deck (weighted per GAME_DATA.fogCards'
+     * declared counts: Dark Hour x2, Miasma x2, Migration x2, Hidden
+     * Opportunity x1, Collapsed Path x2, False Calm x3), shuffled fresh
+     * each round. Previously this deck was fully designed in data but never
+     * actually built or drawn from anywhere in the engine.
+     */
+    _buildFogDeck() {
+        const pool = [];
+        GAME_DATA.fogCards.forEach(card => {
+            for (let i = 0; i < card.count; i++) pool.push(card.id);
+        });
+        this.fogDeck = this._shuffle(pool);
+        this.blockedTiles = new Set(); // Collapsed Path effect targets, reset each round
+        this.miasmaActive = false;
     }
 
     _shuffle(arr) {
@@ -2572,6 +2751,9 @@ class GameEngine {
         if (player.ap <= 0) return this._fail('No AP remaining.');
         if (!this._inBounds(row, col)) return this._fail('Out of bounds.');
         if (!this._isAdjacent(player.position, { row, col })) return this._fail('Tile is not adjacent to you.');
+        if (this.blockedTiles && this.blockedTiles.has(`${row},${col}`)) {
+            return this._fail('This tile is blocked by a Collapsed Path this round.');
+        }
 
         const tile = this.grid[row][col];
         if (tile.revealed) return this._fail('Tile already revealed.');
@@ -2585,7 +2767,8 @@ class GameEngine {
     /** Move: relocate to an adjacent, already-revealed tile. */
     move(row, col) {
         const player = this.getCurrentPlayer();
-        if (player.ap <= 0) return this._fail('No AP remaining.');
+        const usingFreeMove = player.freeMoveAvailable;
+        if (player.ap <= 0 && !usingFreeMove) return this._fail('No AP remaining.');
         if (!this._inBounds(row, col)) return this._fail('Out of bounds.');
         if (!this._isAdjacent(player.position, { row, col })) return this._fail('Tile is not adjacent to you.');
 
@@ -2593,9 +2776,54 @@ class GameEngine {
         if (!tile.revealed) return this._fail('Cannot move to an unrevealed tile.');
 
         player.position = { row, col };
-        player.ap -= 1;
+        if (usingFreeMove) {
+            player.freeMoveAvailable = false; // consumed, SESSION 9: Frost Owlbear's ability
+        } else {
+            player.ap -= 1;
+        }
+
+        // SESSION 6: new round-end condition. Only triggers via an actual
+        // SESSION 6 FIX (found via simulation): "reach any border tile" alone is
+        // trivially satisfied on a player's very FIRST move, always — a corner's
+        // orthogonal neighbors are themselves always border tiles too, and border
+        // tiles make up 56-75% of these grid sizes. That completely defeats the
+        // purpose (scaling round length with real travel), so this now also
+        // requires the border tile be at least half the grid size away (Manhattan
+        // distance) from where the player started this round — forcing genuine
+        // cross-map travel, not a single step off their own starting corner.
+        let reachedBorder = false;
+        const minDistance = Math.ceil(this.gridSize / 2);
+        const distFromStart = Math.abs(row - player.roundStartPosition.row) + Math.abs(col - player.roundStartPosition.col);
+        if (this._isBorderTile(row, col) && distFromStart >= minDistance && !player.reachedBorderThisRound) {
+            player.reachedBorderThisRound = true;
+            reachedBorder = true;
+            this._logEvent(`${player.name} reached a far border tile at (${row},${col}) (distance ${distFromStart} from start) — ready for round end.`);
+        }
+
         this._logEvent(`${player.name} moved to (${row},${col}).`);
-        return { success: true };
+        return { success: true, reachedBorder };
+    }
+
+    _isBorderTile(row, col) {
+        return row === 0 || row === this.gridSize - 1 || col === 0 || col === this.gridSize - 1;
+    }
+
+    /**
+     * SESSION 6: replaces the old "every tile revealed" round-end check,
+     * which didn't scale with player count (proven by simulation: 53
+     * turns/player solo vs 6.7 turns/player at 4-player, because more
+     * simultaneous explorers empty the SHARED map much faster). This
+     * version scales on individual travel distance instead — a player's
+     * own journey to a far border tile doesn't get shorter just because
+     * other players are also exploring.
+     * Round ends when EVERY player has reached a border tile at least
+     * half the grid's width away from their own starting corner (they may
+     * keep playing normally after reaching it — this only gates round-end,
+     * it doesn't stop their turns), OR the monster deck is exhausted.
+     */
+    isRoundOver() {
+        const allReachedBorder = this.players.every(p => p.reachedBorderThisRound);
+        return allReachedBorder || this.monsterDeck.length === 0;
     }
 
     /** Rest: +1 Stamina, costs 1 AP. */
@@ -2604,7 +2832,10 @@ class GameEngine {
         if (player.ap <= 0) return this._fail('No AP remaining.');
 
         const before = player.stamina;
-        player.stamina = Math.min(player.character.maxStamina, player.stamina + GAME_DATA.constants.STAMINA.restRecoverPerAP);
+        // SESSION 9: Bristle Yak's PASSIVE bonus doubles Rest's recovery.
+        const hasBristleYak = player.companions.includes('bristle_yak');
+        const recoverAmount = hasBristleYak ? 2 : GAME_DATA.constants.STAMINA.restRecoverPerAP;
+        player.stamina = Math.min(this._getEffectiveMaxStamina(player), player.stamina + recoverAmount);
         player.ap -= 1;
         this._logEvent(`${player.name} rested: Stamina ${before} → ${player.stamina}.`);
         return { success: true, staminaAfter: player.stamina };
@@ -2615,7 +2846,7 @@ class GameEngine {
      * Round 1: always just CLEAN (handled separately in hunt()).
      */
     getAvailableKillStates(player) {
-        if (this.round === 1) return ['CLEAN'];
+        if (this.round === 1) return ['CAREFUL'];
         const states = ['TAMED']; // Taming always available if you can fight at all
         if (player.stamina > 0) {
             states.unshift('CAREFUL');
@@ -2632,10 +2863,22 @@ class GameEngine {
     hunt(killStateChoice) {
         const player = this.getCurrentPlayer();
         if (player.ap <= 0) return this._fail('No AP remaining.');
+        const cap = this._checkAndTrackActionCap(player, 'huntOrTame');
+        if (!cap.allowed) return this._fail(cap.reason);
 
         const tile = this.grid[player.position.row][player.position.col];
         if (tile.type !== 'ruin') return this._fail('Not standing on a Ruin.');
         if (!tile.revealed) return this._fail('Tile not yet explored.');
+        if ((tile.huntCount || 0) >= GAME_DATA.constants.RUIN_HUNT_CAP) {
+            return this._fail(`This Ruin has been hunted to exhaustion (${GAME_DATA.constants.RUIN_HUNT_CAP} uses) — move on to a fresh one.`);
+        }
+
+        // SESSION 8: real Ruin hunt-cap enforcement (moved from bot-simulation-
+        // only tracking into the actual engine). Counts BOTH successes and
+        // failures toward the cap — otherwise a player could farm a weak
+        // Ruin indefinitely by deliberately under-hunting to dodge the count.
+        tile.huntCount = (tile.huntCount || 0) + 1;
+        if (tile.huntCount >= GAME_DATA.constants.RUIN_HUNT_CAP) tile.exhausted = true;
 
         // Draw a monster if this Ruin hasn't been engaged yet (Act = commitment)
         if (!tile.contents) {
@@ -2650,9 +2893,19 @@ class GameEngine {
             staminaOverride = player.stamina; // resolveHunt will compute normally, we refund after
         }
 
-        const playerAtk = player.character.baseAttack; // TODO: + equipped tool bonuses
         const mappedState = this.round === 1 ? null : killStateChoice;
-        const result = resolveHunt(player.character, playerAtk, monster, player.stamina, mappedState, this.round);
+        // SESSION 10: apply the Trap tool's Tame-specific ATK bonus, if the
+        // player has it equipped AND is attempting to Tame. Tools are
+        // currently static per-character starting equipment, not a dynamic
+        // inventory (Merchant purchasing isn't implemented yet), so this
+        // check is necessarily limited to "does your CHARACTER start with
+        // Trap" for now — only Trapper Tim currently qualifies.
+        const playerAtk = this._getEffectiveAtk(player, mappedState);
+        // SESSION 9: pass an adjusted character object so resolveHunt's internal
+        // Stamina cap accounts for Flame Lizard's PASSIVE bonus (resolveHunt is a
+        // pure function in game-data.js with no access to player.companions).
+        const effectiveCharacter = { ...player.character, maxStamina: this._getEffectiveMaxStamina(player) };
+        const result = resolveHunt(effectiveCharacter, playerAtk, monster, player.stamina, mappedState, this.round);
 
         // Apply Hank's "once per round free hunt" by refunding the Stamina delta
         if (staminaOverride !== null && result.success) {
@@ -2673,19 +2926,67 @@ class GameEngine {
             return { success: false, monster, note: result.note, staminaAfter: player.stamina };
         }
 
-        const finalKillState = result.killState; // 'CLEAN' in Round 1, else chosen state
+        const finalKillState = result.killState; // 'CAREFUL' in Round 1, else chosen state
         player.killLog[finalKillState] = (player.killLog[finalKillState] || 0) + 1;
 
         if (finalKillState === 'TAMED') {
-            // Immediate guaranteed lowest-edge ingredient, monster becomes Companion, never spoils.
             const edges = monster.edges;
             const lowestEdge = ['top', 'left', 'right']
                 .map(k => ({ key: k, ...edges[k] }))
                 .sort((a, b) => a.value - b.value)[0];
+
+            // Tier III: ONE_SHOT — always allowed regardless of cap/conflict,
+            // since it never occupies an ongoing slot. Its bonus is a genuine
+            // one-time BURST applied immediately (not an ongoing passive —
+            // the text was rewritten this session for consistency with that,
+            // since the original text described ongoing effects a departed
+            // companion has no way to keep providing).
+            if (monster.tier === 3) {
+                this._grantIngredient(player, lowestEdge.type, lowestEdge.value);
+                player.departedCompanions.push(monster.id);
+                tile.contents = null;
+                const burstEffect = this._applyImmediateCompanionEffect(player, monster);
+                this._logEvent(`${player.name} Tamed ${monster.name} — a one-time bond! Gained ${lowestEdge.value}x ${lowestEdge.type}. ${burstEffect}. ${monster.name} then departs.`);
+                return { success: true, tamed: true, oneShot: true, monster, ingredientGranted: lowestEdge, burstEffect, staminaAfter: player.stamina };
+            }
+
+            // Tier I/II: permanent, subject to the slot cap (base 3, + any
+            // Cinder Phoenix expansion from expandCompanionCap) and the
+            // Family-conflict rule. If blocked, gracefully fall back to a
+            // normal capture (Bold-equivalent access) rather than an outright
+            // failure — AP/Stamina were already spent on this Hunt, so
+            // getting nothing at all would be unfairly harsh.
+            const effectiveCap = GAME_DATA.constants.MAX_COMPANIONS + (player.maxCompanionsBonus || 0);
+            const atCap = player.companions.length >= effectiveCap;
+            const newFamily = getCompanionFamily(monster);
+            const conflictPair = GAME_DATA.spoilagePairs.find(pair => {
+                const existingFamilies = player.companions.map(cid => getCompanionFamily(GAME_DATA.monsters.find(m => m.id === cid)));
+                return (pair.a === newFamily && existingFamilies.includes(pair.b)) ||
+                       (pair.b === newFamily && existingFamilies.includes(pair.a));
+            });
+
+            if (atCap || conflictPair) {
+                const reason = atCap
+                    ? `already at the ${effectiveCap}-Companion limit`
+                    : `${GAME_DATA.families[newFamily].name} conflicts with an existing Companion's Family`;
+                this._logEvent(`${player.name} could not keep ${monster.name} as a Companion (${reason}) — captured normally instead.`);
+                player.capturedMonsters.push({
+                    instanceId: tile.contents.instanceId,
+                    monsterId: monster.id,
+                    killState: 'BOLD' // fallback access tier, since Tame's guaranteed-edge/no-shop benefit doesn't apply here
+                });
+                tile.contents = null;
+                return { success: true, tamed: false, companionBlocked: true, reason, monster, killState: 'BOLD', staminaAfter: player.stamina };
+            }
+
+            // Immediate guaranteed lowest-edge ingredient, monster becomes Companion, never spoils.
             this._grantIngredient(player, lowestEdge.type, lowestEdge.value);
             player.companions.push(monster.id);
             tile.contents = null;
-            this._logEvent(`${player.name} Tamed ${monster.name}! Gained ${lowestEdge.value}x ${lowestEdge.type}. Companion bonus: ${monster.companionBonus}`);
+            const immediateEffect = monster.companionBonus.type === 'IMMEDIATE'
+                ? this._applyImmediateCompanionEffect(player, monster)
+                : monster.companionBonus.text;
+            this._logEvent(`${player.name} Tamed ${monster.name}! Gained ${lowestEdge.value}x ${lowestEdge.type}. Companion ability: ${immediateEffect}`);
             return { success: true, tamed: true, monster, ingredientGranted: lowestEdge, staminaAfter: player.stamina };
         }
 
@@ -2708,6 +3009,8 @@ class GameEngine {
     extract(capturedInstanceId, chosenEdge) {
         const player = this.getCurrentPlayer();
         if (player.ap <= 0) return this._fail('No AP remaining.');
+        const cap = this._checkAndTrackActionCap(player, 'extract');
+        if (!cap.allowed) return this._fail(cap.reason);
 
         const tile = this.grid[player.position.row][player.position.col];
         const shopEdgeMap = { butcher: 'top', aromaist: 'left', seasoning: 'right' };
@@ -2738,14 +3041,200 @@ class GameEngine {
             if (!conditionMet) return this._fail(`Bottom edge condition not met: ${edgeData.condition}`);
         }
 
-        this._grantIngredient(player, edgeData.type, edgeData.value);
+        // SESSION 8: Lingering Miasma reduces every extraction's yield by 1
+        // (minimum 1) for the rest of the round it was triggered in.
+        const grantedValue = this.miasmaActive ? Math.max(1, edgeData.value - 1) : edgeData.value;
+        this._grantIngredient(player, edgeData.type, grantedValue);
         player.capturedMonsters.splice(capturedIndex, 1);
         player.ap -= 1;
 
-        const spoilageHits = this._runSpoilageCheck(player, captured.killState === 'DESPERATE' ? 2 : 1);
+        // SESSION 8: during Dark Hour, ALL extractions check Spoilage twice,
+        // not just Desperate ones — the Fog itself destabilizes ingredients,
+        // regardless of how carefully the monster was hunted.
+        // SESSION 9: Ember Crab's PASSIVE bonus negates the Desperate-kill-state
+        // reason for a double-check specifically — Dark Hour's separate reason
+        // for doubling still applies independently if it's also active.
+        const hasEmberCrab = player.companions.includes('ember_crab');
+        const desperateForcesDouble = captured.killState === 'DESPERATE' && !hasEmberCrab;
+        const spoilageCheckCount = (desperateForcesDouble || this.darkHourActive) ? 2 : 1;
+        const spoilageHits = this._runSpoilageCheck(player, spoilageCheckCount);
 
-        this._logEvent(`${player.name} extracted ${edgeData.value}x ${edgeData.type} from ${monster.name} at ${tile.type}.`);
-        return { success: true, ingredientGranted: edgeData, spoilageHits, staminaAfter: player.stamina };
+        this._logEvent(`${player.name} extracted ${grantedValue}x ${edgeData.type} from ${monster.name} at ${tile.type}.${this.miasmaActive ? ' (Miasma reduced yield)' : ''}`);
+        return { success: true, ingredientGranted: { type: edgeData.type, value: grantedValue }, spoilageHits, staminaAfter: player.stamina };
+    }
+
+    _getAdjacentTiles(pos) {
+        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+        const results = [];
+        for (const [dr, dc] of dirs) {
+            const r = pos.row + dr, c = pos.col + dc;
+            if (this._inBounds(r, c)) results.push({ row: r, col: c });
+        }
+        return results;
+    }
+
+    /** Public UI helper: can the player Act on their current tile as a Strange Place? */
+    canActOnFogHere() {
+        const player = this.getCurrentPlayer();
+        const tile = this.grid[player.position.row][player.position.col];
+        return tile.type === 'strange' && tile.revealed && !tile.contents;
+    }
+
+    /**
+     * SESSION 8: draws and resolves a Fog card. Previously fully designed
+     * in data (12-card weighted deck, 6 effect types) but never actually
+     * implemented anywhere — Strange Place tiles were completely non-
+     * functional (Act had no code path for them at all).
+     * One-time per tile: once resolved, tile.contents marks it used and
+     * it cannot be triggered again this round (mirrors how a Ruin's
+     * monster is drawn once per visit-cycle, not re-drawn on request).
+     */
+    actOnFog() {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+
+        const tile = this.grid[player.position.row][player.position.col];
+        if (tile.type !== 'strange') return this._fail('Not standing on a Strange Place.');
+        if (!tile.revealed) return this._fail('Tile not yet explored.');
+        if (tile.contents) return this._fail('This Strange Place has already been resolved this round.');
+
+        if (this.fogDeck.length === 0) {
+            tile.contents = { fogCardId: null };
+            player.ap -= 1;
+            this._logEvent(`${player.name} found the Fog deck already exhausted here — nothing happens.`);
+            return { success: true, fogCardId: null, cardName: null, effect: 'No Fog cards remain this round.' };
+        }
+
+        const fogCardId = this.fogDeck.pop();
+        const cardDef = GAME_DATA.fogCards.find(c => c.id === fogCardId);
+        tile.contents = { fogCardId };
+        player.ap -= 1;
+
+        let effectDescription = cardDef.effect;
+
+        switch (fogCardId) {
+            case 'dark_hour':
+                this.darkHourActive = true;
+                break;
+            case 'miasma':
+                this.miasmaActive = true;
+                break;
+            case 'migration': {
+                const adjacentRuins = this._getAdjacentTiles(player.position).filter(p => {
+                    const t = this.grid[p.row][p.col];
+                    const notExhausted = (t.huntCount || 0) < GAME_DATA.constants.RUIN_HUNT_CAP;
+                    return t.type === 'ruin' && t.revealed && !t.contents && notExhausted;
+                });
+                if (adjacentRuins.length > 0 && this.monsterDeck.length > 0) {
+                    const target = adjacentRuins[Math.floor(Math.random() * adjacentRuins.length)];
+                    const monster = this.monsterDeck.pop();
+                    this.grid[target.row][target.col].contents = { monster, instanceId: `m${++this._monsterInstanceCounter}` };
+                    effectDescription += ` — placed a facedown monster on the Ruin at (${target.row},${target.col})`;
+                } else {
+                    effectDescription += ' — no valid adjacent Ruin (or deck empty), no effect';
+                }
+                break;
+            }
+            case 'opportunity':
+                player.spoilageImmunityCharges += 1;
+                effectDescription += ` — ${player.name} may ignore one Spoilage check later this round`;
+                break;
+            case 'collapsed': {
+                const unrevealed = [];
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        if (!this.grid[r][c].revealed) unrevealed.push({ row: r, col: c });
+                    }
+                }
+                if (unrevealed.length > 0) {
+                    const target = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+                    this.blockedTiles.add(`${target.row},${target.col}`);
+                    effectDescription += ` — tile at (${target.row},${target.col}) blocked for the rest of the round`;
+                } else {
+                    effectDescription += ' — no unrevealed tile left to block, no effect';
+                }
+                break;
+            }
+            case 'false_calm':
+            default:
+                break;
+        }
+
+        this._logEvent(`${player.name} triggered Fog card "${cardDef.name}": ${effectDescription}`);
+        return { success: true, fogCardId, cardName: cardDef.name, effect: effectDescription };
+    }
+
+    /** Public UI helper: can the player Act on the Crucible here? */
+    canActOnCrucibleHere() {
+        const player = this.getCurrentPlayer();
+        const tile = this.grid[player.position.row][player.position.col];
+        return tile.type === 'crucible' && tile.revealed;
+    }
+
+    /** Public UI helper: preview the 2 monsters a Crucible attempt would draw, without committing. */
+    peekCrucibleChoices() {
+        if (!this.canActOnCrucibleHere()) return [];
+        return this.monsterDeck.slice(-2).reverse();
+    }
+
+    /**
+     * SESSION 8: the Crucible (Round 3 center tile) — previously entirely
+     * unimplemented. Draws 2 monsters, the player chooses 1 to fight (the
+     * other is discarded, permanently removed from the deck), forced
+     * Desperate-tier access regardless of Stamina, and automatically
+     * triggers Dark Hour for the rest of the round.
+     */
+    actOnCrucible(chosenMonsterId) {
+        const player = this.getCurrentPlayer();
+        if (player.ap <= 0) return this._fail('No AP remaining.');
+
+        const tile = this.grid[player.position.row][player.position.col];
+        if (tile.type !== 'crucible') return this._fail('Not standing on the Crucible.');
+        if (!tile.revealed) return this._fail('Tile not yet explored.');
+        if (this.monsterDeck.length === 0) return this._fail('Monster deck is empty — nothing to hunt at the Crucible.');
+
+        // SESSION 9: capped at once per player per round. Without this, a
+        // single player camping the Crucible could drain the ENTIRE shared
+        // Round 3 monster deck in ~4 turns (verified: 13-monster deck, up to
+        // 4 monsters consumed per turn at 2 attempts x 2 draws each) —
+        // starving every other player and every Ruin, and prematurely
+        // ending the round via the deck-exhaustion trigger.
+        if (player.crucibleUsedThisRound) {
+            return this._fail('You have already faced the Crucible this round.');
+        }
+
+        const cap = this._checkAndTrackActionCap(player, 'huntOrTame');
+        if (!cap.allowed) return this._fail(cap.reason);
+
+        const drawn = [];
+        if (this.monsterDeck.length >= 1) drawn.push(this.monsterDeck.pop());
+        if (this.monsterDeck.length >= 1) drawn.push(this.monsterDeck.pop());
+
+        const chosen = drawn.find(m => m.id === chosenMonsterId) || drawn[0];
+        const discarded = drawn.filter(m => m !== chosen);
+
+        this.darkHourActive = true; // Crucible always triggers Dark Hour, win or lose
+        player.crucibleUsedThisRound = true; // facing it counts, whether you win or lose
+
+        const playerAtk = player.character.baseAttack;
+        const effectiveCharacter = { ...player.character, maxStamina: this._getEffectiveMaxStamina(player) };
+        const result = resolveHunt(effectiveCharacter, playerAtk, chosen, player.stamina, 'DESPERATE', this.round);
+        player.stamina = result.staminaAfter;
+        player.ap -= 1;
+
+        if (!result.success) {
+            this._logEvent(`${player.name} was defeated at the Crucible by ${chosen.name}! Dark Hour begins regardless. (${discarded.length} monster discarded)`);
+            return { success: false, monster: chosen, discarded, staminaAfter: player.stamina, note: result.note };
+        }
+
+        player.killLog.DESPERATE = (player.killLog.DESPERATE || 0) + 1;
+        player.capturedMonsters.push({
+            instanceId: `m${++this._monsterInstanceCounter}`,
+            monsterId: chosen.id,
+            killState: 'DESPERATE'
+        });
+        this._logEvent(`${player.name} triumphed at the Crucible over ${chosen.name}! Dark Hour begins. (${discarded.length} monster discarded, captured at Desperate access)`);
+        return { success: true, monster: chosen, discarded, killState: 'DESPERATE', staminaAfter: player.stamina };
     }
 
     _lowestEdgeKey(monster) {
@@ -2783,15 +3272,166 @@ class GameEngine {
         return true;
     }
 
+    /**
+     * SESSION 10: computes effective ATK for a hunt attempt, applying the
+     * Trap tool's tameBonus if the player has it equipped AND is attempting
+     * to Tame. Only relevant for TAMED — normal kill states use base ATK.
+     */
+    _getEffectiveAtk(player, killStateChoice) {
+        let atk = player.character.baseAttack;
+        if (killStateChoice === 'TAMED') {
+            const startingTool = player.character.startingResource?.type === 'tool'
+                ? GAME_DATA.tools.find(t => t.id === player.character.startingResource.id)
+                : null;
+            if (startingTool?.tameBonus) atk += startingTool.tameBonus;
+        }
+        return atk;
+    }
+
     _grantIngredient(player, type, amount) {
         player.ingredientTokens[type] = (player.ingredientTokens[type] || 0) + amount;
     }
 
+    /**
+     * SESSION 9: accounts for Flame Lizard's PASSIVE Companion bonus
+     * (+1 max Stamina). Replaces direct reads of player.character.maxStamina
+     * everywhere that value is used as a cap, so the bonus actually matters.
+     */
+    _getEffectiveMaxStamina(player) {
+        const hasFlameLizard = player.companions.includes('flame_lizard');
+        return player.character.maxStamina + (hasFlameLizard ? 1 : 0);
+    }
+
+    /**
+     * SESSION 9: applies an IMMEDIATE-type Companion effect the moment it
+     * triggers (either a Tier I/II Companion's grant-at-taming bonus, or a
+     * Tier III one-shot burst). Returns a human-readable description of
+     * what happened, for logging.
+     */
+    _applyImmediateCompanionEffect(player, monster) {
+        const bonus = monster.companionBonus;
+        if (!bonus.wired) return bonus.text + ' (not yet mechanically implemented)';
+
+        switch (bonus.effectKey) {
+            case 'grantRerollToken':
+                player.rerollTokens += 1;
+                return 'Gained 1 Reroll Token';
+            case 'grantRerollTokens2':
+                player.rerollTokens += 2;
+                return 'Gained 2 Reroll Tokens';
+            case 'fullStaminaRestore':
+                player.stamina = this._getEffectiveMaxStamina(player);
+                return 'Stamina fully restored';
+            case 'clearFogEffects':
+                this.darkHourActive = false;
+                this.miasmaActive = false;
+                return 'Dark Hour and Miasma cleared for the rest of the round';
+            case 'expandCompanionCap':
+                player.maxCompanionsBonus = (player.maxCompanionsBonus || 0) + 1;
+                return `Max Companion slots permanently increased to ${GAME_DATA.constants.MAX_COMPANIONS + player.maxCompanionsBonus}`;
+            default:
+                return bonus.text + ' (effect key not recognized)';
+        }
+    }
+
+    /**
+     * SESSION 9: the actual "use an ability from your Companion" action —
+     * previously requested but non-existent (all 20 Companion bonuses were
+     * pure flavor text with no code path to invoke them at all).
+     * AP cost is per-ability, not a blanket charge: Grumble Boar's and
+     * Frost Owlbear's own flavor text explicitly promise "free action (0
+     * AP)" — charging AP to activate a "free" action would net to the
+     * same cost as acting normally, providing zero actual benefit.
+     * Tide Eel's ability makes no such promise, so it costs the normal 1 AP.
+     * "Unlimited" (no per-round cap) still means each use has its own
+     * cost where the flavor text calls for one — it's the CAP that's
+     * absent, not necessarily the cost.
+     * Only Tier I/II PERMANENT Companions (in player.companions) can have
+     * their ability invoked this way — a departed one-shot Companion
+     * already delivered its effect at the moment of taming.
+     */
+    useCompanionAbility(monsterId) {
+        const player = this.getCurrentPlayer();
+        if (!player.companions.includes(monsterId)) {
+            return this._fail('That monster is not one of your current Companions.');
+        }
+
+        const monster = GAME_DATA.monsters.find(m => m.id === monsterId);
+        const bonus = monster.companionBonus;
+
+        if (bonus.type === 'PASSIVE') {
+            return this._fail(`${monster.name}'s ability is passive — it applies automatically, there's nothing to activate.`);
+        }
+        if (bonus.type === 'IMMEDIATE') {
+            return this._fail(`${monster.name}'s ability already triggered once, at the moment it was Tamed.`);
+        }
+        if (!bonus.wired) {
+            return this._fail(`${monster.name}'s ability ("${bonus.text}") is designed but not yet implemented in this build.`);
+        }
+        if (bonus.type === 'ACTIVE_ONCE_PER_ROUND' && player.companionAbilityUsedThisRound[monsterId]) {
+            return this._fail(`${monster.name}'s ability has already been used this round.`);
+        }
+
+        const apCostByEffect = { freeRest: 0, grantSpoilageCharge: 1, freeMove: 0 };
+        const apCost = apCostByEffect[bonus.effectKey] ?? 1;
+        if (player.ap < apCost) return this._fail('No AP remaining.');
+
+        let effectDescription;
+        switch (bonus.effectKey) {
+            case 'freeRest':
+                player.stamina = Math.min(this._getEffectiveMaxStamina(player), player.stamina + 1);
+                effectDescription = `Recovered +1 Stamina (now ${player.stamina}), at no AP cost`;
+                break;
+            case 'grantSpoilageCharge':
+                player.spoilageImmunityCharges += 1;
+                effectDescription = 'Gained 1 Spoilage-immunity charge';
+                break;
+            case 'freeMove':
+                player.freeMoveAvailable = true;
+                effectDescription = 'Your next Move this turn will cost 0 AP';
+                break;
+            default:
+                return this._fail(`${monster.name}'s ability effect key is not recognized.`);
+        }
+
+        player.ap -= apCost;
+        if (bonus.type === 'ACTIVE_ONCE_PER_ROUND') {
+            player.companionAbilityUsedThisRound[monsterId] = true;
+        }
+
+        this._logEvent(`${player.name} used ${monster.name}'s Companion ability: ${effectDescription}`);
+        return { success: true, monster, effect: effectDescription };
+    }
+
+    /**
+     * SESSION 9: Pearl Manta's PASSIVE bonus makes the holder immune to the
+     * Ember≠Bloom pair specifically (the other two pairs — Tide≠Verdant,
+     * Bloom≠Tide — still apply normally).
+     */
+    _filterSpoilageHits(player, hits) {
+        if (!player.companions.includes('pearl_manta')) return hits;
+        return hits.filter(pair => !((pair.a === 'EMBER' && pair.b === 'BLOOM') || (pair.a === 'BLOOM' && pair.b === 'EMBER')));
+    }
+
     _runSpoilageCheck(player, times = 1) {
+        // SESSION 8: Hidden Opportunity grants a personal, savable charge
+        // that auto-consumes to prevent the NEXT spoilage this player would
+        // otherwise suffer (simplification: auto-used-if-beneficial rather
+        // than prompting "use your charge?" — noted as a simplification).
+        if (player.spoilageImmunityCharges > 0) {
+            const heldTypes = Object.keys(player.ingredientTokens).filter(t => player.ingredientTokens[t] > 0);
+            const wouldHit = this._filterSpoilageHits(player, checkSpoilage(heldTypes));
+            if (wouldHit.length > 0) {
+                player.spoilageImmunityCharges -= 1;
+                this._logEvent(`${player.name} used a Hidden Opportunity charge to avoid spoilage entirely.`);
+                return [];
+            }
+        }
+
         let allHits = [];
         for (let i = 0; i < times; i++) {
             const heldTypes = Object.keys(player.ingredientTokens).filter(t => player.ingredientTokens[t] > 0);
-            const hits = checkSpoilage(heldTypes);
+            const hits = this._filterSpoilageHits(player, checkSpoilage(heldTypes));
             hits.forEach(pair => {
                 // "Dispose of both" — discard the ENTIRE held stack of every
                 // ingredient type belonging to either conflicting Family,
@@ -2877,6 +3517,7 @@ class GameEngine {
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const next = this.getCurrentPlayer();
         next.ap = GAME_DATA.constants.ROUND_GRIDS[this.round].apPool;
+        next.actionsThisTurn = {}; // SESSION 6: reset the per-turn Hunt/Extract cap
 
         return { success: true, nextPlayer: next.name };
     }
@@ -2887,18 +3528,26 @@ class GameEngine {
         this.round += 1;
         this._setupRoundGrid(this.round);
         this._buildMonsterDeck(this.round);
+        this._buildFogDeck();
+        this.darkHourActive = false; // Dark Hour is scoped to the round it triggers in
 
         this.players.forEach(p => {
             p.stamina = p.character.maxStamina;
             p.ap = GAME_DATA.constants.ROUND_GRIDS[this.round].apPool;
             p.hankFreeHuntUsedThisRound = false;
+            p.reachedBorderThisRound = false;
+            p.actionsThisTurn = {}; // SESSION 6: fresh per-turn Hunt/Extract cap each round
+            p.crucibleUsedThisRound = false; // SESSION 9: fresh Crucible attempt each round
             // Reposition to corners again for the new (larger) grid
         });
         const corners = [
             { row: 0, col: 0 }, { row: 0, col: this.gridSize - 1 },
             { row: this.gridSize - 1, col: 0 }, { row: this.gridSize - 1, col: this.gridSize - 1 }
         ];
-        this.players.forEach((p, i) => { p.position = corners[i % 4]; });
+        this.players.forEach((p, i) => {
+            p.position = corners[i % 4];
+            p.roundStartPosition = { ...corners[i % 4] };
+        });
         this.players.forEach(p => { this.grid[p.position.row][p.position.col].revealed = true; });
 
         // Catch-up: lowest-scoring player goes first (Session 2 rule)
@@ -2931,7 +3580,8 @@ class GameEngine {
     canHuntHere() {
         const player = this.getCurrentPlayer();
         const tile = this.grid[player.position.row][player.position.col];
-        return tile.type === 'ruin' && tile.revealed;
+        const huntCount = tile.huntCount || 0;
+        return tile.type === 'ruin' && tile.revealed && huntCount < GAME_DATA.constants.RUIN_HUNT_CAP;
     }
 
     /** Public UI helper: can the player Extract at their current tile? */
@@ -2941,6 +3591,30 @@ class GameEngine {
         const isShop = ['butcher', 'aromaist', 'seasoning'].includes(tile.type);
         const isTessaSkip = player.character.id === 'tracker_tessa' && tile.type === 'ruin';
         return (isShop || isTessaSkip) && player.capturedMonsters.length > 0;
+    }
+
+    /**
+     * SESSION 6: Hunt/Tame and Extract can each be used at most 2x per turn.
+     * Scoped deliberately narrow — only these two "value-generating" actions
+     * (the ones actually implicated in one-turn power-dumping, e.g. draining
+     * a Ruin's cap or a Shop's rest-cooldown in a single turn) are capped.
+     * Explore/Move/Rest are NOT capped: they're traversal/logistics, not
+     * value generation, and restricting them would actively hurt the
+     * pacing fix from the bigger-map change (players need to move freely
+     * on larger boards, not less freely).
+     * Hunt and Tame share one bucket ('huntOrTame') since both engage a
+     * Ruin — otherwise a player could Hunt twice then Tame once for 3
+     * Ruin-engagements in a turn, defeating the point of the cap.
+     * Automatically inert in Round 1 (2 AP can never reach a 3rd use of
+     * anything anyway), so no special-casing needed there.
+     */
+    _checkAndTrackActionCap(player, actionType) {
+        const count = player.actionsThisTurn[actionType] || 0;
+        if (count >= 2) {
+            return { allowed: false, reason: `Cannot use the same action a 3rd time this turn (already used ${actionType} twice). Try a different action.` };
+        }
+        player.actionsThisTurn[actionType] = count + 1;
+        return { allowed: true };
     }
 
     _fail(reason) {
@@ -3393,7 +4067,8 @@ function renderPlayerStatusList() {
 }
 
 function renderInventory(player) {
-    // Captured monsters (pre-extraction)
+    // Captured monsters (pre-extraction, temporary) — visually and
+    // structurally distinct from Companions, per explicit requirement.
     const capturedEl = document.getElementById('captured-monsters');
     capturedEl.innerHTML = player.capturedMonsters.length === 0
         ? '<p style="font-size:0.8em;color:#999;">None yet.</p>'
@@ -3401,8 +4076,8 @@ function renderInventory(player) {
     player.capturedMonsters.forEach(c => {
         const monster = GAME_DATA.monsters.find(m => m.id === c.monsterId);
         const chip = document.createElement('div');
-        chip.style.cssText = 'background:#fff3cd; padding:6px; border-radius:6px; margin-bottom:4px; font-size:0.8em;';
-        chip.textContent = `${monster.name} (${c.killState})`;
+        chip.className = 'captured-chip';
+        chip.innerHTML = `<span class="chip-label">${monster.name}</span><span class="kill-state-tag">${c.killState}</span>`;
         capturedEl.appendChild(chip);
     });
 
@@ -3416,7 +4091,8 @@ function renderInventory(player) {
         entries.forEach(([type, count]) => tokenGrid.appendChild(renderTokenChip(type, count)));
     }
 
-    // Companions
+    // Companions — permanent, capped at MAX_COMPANIONS, never mixed with
+    // the temporary Captured list above.
     const companionEl = document.getElementById('companion-list');
     companionEl.innerHTML = '';
     if (player.companions.length === 0) {
@@ -3427,6 +4103,8 @@ function renderInventory(player) {
             companionEl.appendChild(renderCompanionCard(monster));
         });
     }
+    const capBadge = document.querySelector('.companion-section h4 small');
+    if (capBadge) capBadge.textContent = `(Tamed — permanent, ${player.companions.length}/${GAME_DATA.constants.MAX_COMPANIONS} slots used)`;
 
     // Tools (static display of what's equipped/owned — no shop-buying UI yet)
     const toolsEl = document.getElementById('tools-list');
@@ -3556,7 +4234,7 @@ function openHuntModal(tameOnly) {
         btn.classList.remove('selected');
     });
 
-    let chosenState = ENGINE.round === 1 ? 'CLEAN' : null;
+    let chosenState = ENGINE.round === 1 ? 'CAREFUL' : null;
     document.querySelectorAll('.kill-state-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.kill-state-btn').forEach(b => b.classList.remove('selected'));
