@@ -127,7 +127,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Dark Hour' }
             },
-            companionBonus: '+1 max Stamina for the rest of the game.'
+            companionBonus: { text: '+1 max Stamina for the rest of the game.', type: 'PASSIVE', effectKey: 'maxStaminaBonus', wired: true }
         },
         {
             id: 'grumble_boar', name: 'Grumble Boar', tier: 1, hp: 2, atk: 1,
@@ -137,7 +137,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Red Meat', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: 'Once per round, may Rest as a free action (0 AP).'
+            companionBonus: { text: 'Once per round, may Rest as a free action (0 AP).', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'freeRest', wired: true }
         },
         {
             id: 'tide_eel', name: 'Tide Eel', tier: 1, hp: 1, atk: 1,
@@ -147,7 +147,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Extracted at Butcher' }
             },
-            companionBonus: 'Ignore spoilage once per round for the rest of the game.'
+            companionBonus: { text: 'Once per round, may grant yourself one Spoilage-immunity charge.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'grantSpoilageCharge', wired: true }
         },
         {
             id: 'moss_stag', name: 'Moss Stag', tier: 1, hp: 1, atk: 1,
@@ -157,7 +157,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: '+1 AP on any turn you also Rest.'
+            companionBonus: { text: '+1 AP on any turn you also Rest.', type: 'PASSIVE', effectKey: 'apBonusOnRest', wired: true }
         },
         {
             id: 'ember_crab', name: 'Ember Crab', tier: 1, hp: 2, atk: 1,
@@ -167,7 +167,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Red Meat', value: 1, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Your Brutal kills only check spoilage once (not twice) for the rest of the game.'
+            companionBonus: { text: 'Your Desperate extractions only check Spoilage once (not twice) for the rest of the game.', type: 'PASSIVE', effectKey: 'desperateSingleCheck', wired: true }
         },
         {
             id: 'bristle_yak', name: 'Bristle Yak', tier: 1, hp: 2, atk: 1,
@@ -177,7 +177,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'White Meat', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: 'Rest recovers +2 Stamina instead of +1, for the rest of the game.'
+            companionBonus: { text: 'Rest recovers +2 Stamina instead of +1, for the rest of the game.', type: 'PASSIVE', effectKey: 'enhancedRest', wired: true }
         },
         {
             id: 'candy_slime', name: 'Candy Slime', tier: 1, hp: 1, atk: 1,
@@ -187,7 +187,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 1 },
                 bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
             },
-            companionBonus: 'Gain 1 Reroll Token immediately when Tamed.'
+            companionBonus: { text: 'Gain 1 Reroll Token immediately when Tamed.', type: 'IMMEDIATE', effectKey: 'grantRerollToken', wired: true }
         },
 
         // --- TIER II (Round 2, HP 2-3, ATK 1-2) ---
@@ -199,7 +199,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Mystic Seasoning', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: '+1 Reroll Token immediately.'
+            companionBonus: { text: '+1 Reroll Token immediately.', type: 'IMMEDIATE', effectKey: 'grantRerollToken', wired: true }
         },
         {
             id: 'rock_golem', name: 'Rock Golem', tier: 2, hp: 3, atk: 2,
@@ -209,7 +209,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 2 },
                 bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Extracted at Seasoning Mill' }
             },
-            companionBonus: '+1 max AP on turns you do not Hunt.'
+            companionBonus: { text: '+1 max AP on turns you do not Hunt.', type: 'PASSIVE', effectKey: 'apBonusOnNoHunt', wired: true }
         },
         {
             id: 'river_leviathan', name: 'River Leviathan', tier: 2, hp: 3, atk: 2,
@@ -219,7 +219,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 1 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Net used' }
             },
-            companionBonus: 'Once per round, treat a Rushed kill as Clean.'
+            companionBonus: { text: 'Once per round, treat a Bold kill as Careful-tier access.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'nextBoldAsCareful', wired: true }
         },
         {
             id: 'pearl_manta', name: 'Pearl Manta', tier: 2, hp: 2, atk: 1,
@@ -229,7 +229,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'Sweet Aroma', value: 1, condition: 'Tamed' }
             },
-            companionBonus: 'Immune to the Ember≠Bloom spoilage pair only, for the rest of the game.'
+            companionBonus: { text: 'Immune to the Ember≠Bloom spoilage pair only, for the rest of the game.', type: 'PASSIVE', effectKey: 'emberBloomImmune', wired: true }
         },
         {
             id: 'mirror_kitsune', name: 'Mirror Kitsune', tier: 2, hp: 3, atk: 2,
@@ -239,7 +239,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).'
+            companionBonus: { text: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).', type: 'ACTIVE_ONCE_PER_GAME', effectKey: 'copyDish', wired: true }
         },
         {
             id: 'spore_shambler', name: 'Spore Shambler', tier: 2, hp: 2, atk: 1,
@@ -249,7 +249,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 2 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Careful Kill' }
             },
-            companionBonus: 'Wildcard dishes score +1 for the rest of the game.'
+            companionBonus: { text: 'Wildcard dishes score +1 for the rest of the game.', type: 'PASSIVE', effectKey: 'wildcardBonus', wired: true }
         },
         {
             id: 'frost_owlbear', name: 'Frost Owlbear', tier: 2, hp: 3, atk: 2,
@@ -259,7 +259,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 1 },
                 bottom: { type: 'White Meat', value: 1, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Once per round, Move for free (0 AP).'
+            companionBonus: { text: 'Once per round, Move for free (0 AP).', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'freeMove', wired: true }
         },
         {
             id: 'thorn_basilisk', name: 'Thorn Basilisk', tier: 2, hp: 3, atk: 2,
@@ -269,7 +269,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Extracted at Butcher' }
             },
-            companionBonus: 'Your Underdog Bonus (if active) grants +2 instead of +1.'
+            companionBonus: { text: 'Your Underdog Bonus (if active) grants +2 instead of +1.', type: 'PASSIVE', effectKey: 'enhancedUnderdog', wired: true }
         },
         {
             id: 'pepper_harpy', name: 'Pepper Harpy', tier: 2, hp: 2, atk: 2,
@@ -279,7 +279,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: 'Explore actions reveal the tile type before you commit AP (free peek).'
+            companionBonus: { text: 'Explore actions reveal the tile type before you commit AP (free peek).', type: 'PASSIVE', effectKey: 'freePeek', wired: true }
         },
 
         // --- TIER III (Round 3, HP 3-4, ATK 2-3) ---
@@ -291,7 +291,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 2 },
                 bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Dark Hour' }
             },
-            companionBonus: 'All your Ember-Family dishes score +1 for the rest of the game.'
+            companionBonus: { text: 'Immediately gain 2 Reroll Tokens.', type: 'IMMEDIATE', effectKey: 'grantRerollTokens2', wired: true }
         },
         {
             id: 'abyss_angler', name: 'Abyss Angler', tier: 3, hp: 3, atk: 2,
@@ -301,7 +301,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Desperate Posture' }
             },
-            companionBonus: 'Once per round, ignore a Fog card effect entirely.'
+            companionBonus: { text: 'Immediately clears Dark Hour and Miasma for the rest of this round.', type: 'IMMEDIATE', effectKey: 'clearFogEffects', wired: true }
         },
         {
             id: 'iron_tortoise', name: 'Iron Tortoise', tier: 3, hp: 4, atk: 2,
@@ -311,7 +311,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 2 },
                 bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Careful Kill' }
             },
-            companionBonus: 'Failed Hunts cost you 1 less Stamina (min 0) for the rest of the game.'
+            companionBonus: { text: 'Immediately restore your Stamina to maximum.', type: 'IMMEDIATE', effectKey: 'fullStaminaRestore', wired: true }
         },
         {
             id: 'cinder_phoenix', name: 'Cinder Phoenix', tier: 3, hp: 4, atk: 3,
@@ -321,7 +321,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 2 },
                 bottom: { type: 'Fiery Seasoning', value: 2, condition: 'Brutal Kill' }
             },
-            companionBonus: 'Once per game, fully restore your Stamina as a free action.'
+            companionBonus: { text: 'Immediately gain +1 to your maximum Companion slots for the rest of the game.', type: 'IMMEDIATE', effectKey: 'expandCompanionCap', wired: true }
         }
     ],
 
@@ -636,32 +636,70 @@ const GAME_DATA = {
             effect: 'Draw 2 monsters, choose 1. Forced Brutal kill. Any edge including Bottom. Check spoilage twice.' }
     ],
 
-    // Location counts per round grid (must sum to grid tile total)
+    // Location counts per round grid — SESSION 6: bumped up one size step
+    // (4x4/5x5/6x6 instead of 3x3/4x4/5x5), motivated by the simulation
+    // finding that turns-per-player collapses badly at higher player counts
+    // on small maps. Also gives Aromaist/Seasoning Mill a 2nd copy at
+    // Round 3 (previously stuck at 1 forever, a bottleneck rather than
+    // tension once maps this size), and phases utility tiles in from
+    // Round 1 instead of Round 2.
     locationCounts: {
-        1: { // 3x3 = 9 tiles
-            ruin: 4, butcher: 1, aromaist: 1, seasoning: 1, strange: 2
+        1: { // 4x4 = 16 tiles
+            ruin: 7, butcher: 1, aromaist: 1, seasoning: 1, strange: 4,
+            merchant: 1, well: 1
         },
-        2: { // 4x4 = 16 tiles
-            ruin: 6, butcher: 2, aromaist: 1, seasoning: 1, strange: 3,
-            merchant: 1, well: 1, watchtower: 1
+        2: { // 5x5 = 25 tiles
+            ruin: 10, butcher: 2, aromaist: 1, seasoning: 1, strange: 5,
+            merchant: 2, well: 1, watchtower: 1, kitchen: 1, shrine: 1
         },
-        3: { // 5x5 = 25 tiles
-            ruin: 9, butcher: 2, aromaist: 1, seasoning: 1, strange: 5,
-            merchant: 2, well: 1, watchtower: 1, kitchen: 1, shrine: 1, crucible: 1
+        3: { // 6x6 = 36 tiles
+            ruin: 15, butcher: 2, aromaist: 2, seasoning: 2, strange: 6,
+            merchant: 2, well: 2, watchtower: 2, kitchen: 1, shrine: 1, crucible: 1
         }
     },
 
     // ================================================================
-    // MAP LAYOUTS — fixed positional templates, not just counts.
-    // Counts alone would let a bad shuffle cluster all shops in one
-    // corner, undermining the "shop scarcity forces route planning"
-    // design goal. Positions are pre-set; only WHICH monster/fog card
-    // sits under Ruin/Strange tiles is randomized at setup.
-    // Grid coordinates are [row][col], 0-indexed, row 0 = top.
-    // Players start at corners; corners are always Ruins (guaranteed
-    // early action, no dead first turn).
+    // RANDOM MAP GENERATION — SESSION 6: replaces the old fixed
+    // mapLayouts templates. Maps are randomized each game; only the 4
+    // corners are guaranteed Ruins (every player gets an immediate first
+    // action). Everything else is shuffled from the counts above.
     // ================================================================
-    mapLayouts: {
+    generateRandomLayout(round) {
+        const counts = { ...this.locationCounts[round] };
+        const size = this.constants.ROUND_GRIDS[round].size;
+        const totalTiles = size * size;
+
+        // Reserve the 4 corners as Ruin, remove them from the shuffle pool
+        counts.ruin -= 4;
+
+        const pool = [];
+        Object.entries(counts).forEach(([type, count]) => {
+            for (let i = 0; i < count; i++) pool.push(type);
+        });
+
+        // Fisher-Yates shuffle
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+
+        const grid = [];
+        let poolIndex = 0;
+        for (let r = 0; r < size; r++) {
+            const row = [];
+            for (let c = 0; c < size; c++) {
+                const isCorner = (r === 0 || r === size - 1) && (c === 0 || c === size - 1);
+                row.push(isCorner ? 'ruin' : pool[poolIndex++]);
+            }
+            grid.push(row);
+        }
+        return grid;
+    },
+
+    // Old fixed mapLayouts templates — DEPRECATED, superseded by
+    // generateRandomLayout() above. Kept only for historical reference;
+    // no code reads this anymore.
+    _mapLayoutsLegacy_UNUSED: {
         1: { // 3x3 — Round 1, Basic tier, always Clean
             grid: [
                 ['ruin',     'strange',  'ruin'],
@@ -745,8 +783,9 @@ const GAME_DATA = {
         {
             id: 'trap', name: 'Trap',
             cost: { 'Any Aroma': 1, 'Any Seasoning': 1 },
-            effect: 'Clean if monster was facedown',
+            effect: 'Careful if monster was facedown',
             staminaInteraction: 'Hunting a facedown (freshly revealed) monster with a Trap equipped costs 0 Stamina entirely — the trap does the work, not you.',
+            tameBonus: 2, // SESSION 10: +2 effective ATK specifically for Tame attempts — a net/trap is the archetypal live-capture tool, thematically the natural fit
             flavorText: '"Why fight the monster when you can convince it to defeat itself?" — Trapper Tim'
         }
     ],
@@ -759,10 +798,10 @@ const GAME_DATA = {
         EXOTIC_SPOILAGE: 'Exotic Meat spoils at round end if unused',
 
         KILL_STATES: {
-            CLEAN:   { icon: '🗡️',  name: 'Clean',   effect: 'Any normal edge', staminaCost: 1 },
-            RUSHED:  { icon: '🗡️~', name: 'Rushed',  effect: 'Lowest edge only', staminaCost: 0, staminaRefund: 1 },
-            BRUTAL:  { icon: '🛠️',  name: 'Brutal',  effect: 'Any + bonus edge, check spoilage 2x', staminaCost: 1 },
-            TAMED:   { icon: '🤝',  name: 'Tamed',   effect: 'Guaranteed lowest edge, monster becomes permanent Companion, never spoils', staminaCost: 1 }
+            CAREFUL:  { icon: '🗡️',  name: 'Careful',  effect: 'Locked to lowest edge only', staminaCost: 1 },
+            BOLD:     { icon: '🗡️~', name: 'Bold',     effect: 'Normal edge at whichever shop you extract at', staminaCost: 0, staminaRefund: 1 },
+            DESPERATE:{ icon: '🛠️',  name: 'Desperate',effect: 'Normal edge or Bottom bonus, check spoilage 2x', staminaCost: 1 },
+            TAMED:    { icon: '🤝',  name: 'Tamed',    effect: 'Guaranteed lowest edge, monster becomes permanent Companion, never spoils', staminaCost: 1 }
         },
 
         INGREDIENT_TYPES: {
@@ -774,10 +813,43 @@ const GAME_DATA = {
         // Ingredient tokens: shared supply, ~8 copies of each of the 12 types
         TOKEN_SUPPLY_PER_TYPE: 8,
 
+        // SESSION 7: Companion Type System
+        // - Cap: at most 3 PERMANENT Companions per hero at once.
+        // - Type/conflict: a Companion's "type" is the dominant Flavor
+        //   Family among its monster's top/left/right edges (majority
+        //   vote — verified no monster produces a 3-way tie). A hero
+        //   cannot hold two Companions whose Families conflict (same
+        //   pairs as Spoilage: Ember≠Bloom, Tide≠Verdant, Bloom≠Tide).
+        // - Behavior split by monster tier:
+        //     Tier I/II  -> PASSIVE: permanent, occupies one of the 3
+        //                   slots, subject to the Family-conflict rule.
+        //     Tier III   -> ONE_SHOT: grants its bonus once immediately,
+        //                   then the monster DEPARTS (never occupies a
+        //                   slot, never subject to the conflict rule,
+        //                   since it doesn't stick around to conflict
+        //                   with anything). Recorded in a separate
+        //                   history list for ending/scoring purposes.
+        MAX_COMPANIONS: 3,
+
+        // SESSION 8: the actual per-Ruin hunt cap, moved from bot-simulation-only
+        // enforcement (simulate.js) into the real engine, where it always should
+        // have lived. Without this, a player can camp a single Ruin indefinitely.
+        RUIN_HUNT_CAP: 3,
+
+        // SESSION 10: Taming requires a HIGHER ATK threshold than killing —
+        // subduing a monster alive is harder than simply defeating it.
+        // Without tool help, this is severe: base ATK values are 3/2/1/2
+        // across the 4 characters, and the weakest monster is HP 1, so
+        // only Butcher Bob (ATK 3) can Tame anything at all unassisted
+        // (and only the 3 weakest Tier I monsters). Everyone else needs
+        // the Trap tool's tameBonus (see tools array) or a future
+        // equivalent to ever Tame anything.
+        TAME_ATK_BUFFER: 2,
+
         ROUND_GRIDS: {
-            1: { size: 3, tiles: 9,  killStates: false, staminaActive: false, apPool: 2 },
-            2: { size: 4, tiles: 16, killStates: true,  staminaActive: true,  apPool: 3 },
-            3: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 3 }
+            1: { size: 4, tiles: 16, killStates: false, staminaActive: false, apPool: 3 },
+            2: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 4 },
+            3: { size: 6, tiles: 36, killStates: true,  staminaActive: true,  apPool: 4 }
         },
 
         STAMINA: {
@@ -869,6 +941,30 @@ function resolveDishScore(dish, spentIngredients, expertTier = false) {
 // ---------------------------------------------------------------------
 // Spoilage Check — uses the same Family model as Harmony
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Companion Family — dominant Family among a monster's top/left/right
+// edges (majority vote). Used for the Companion conflict rule (Session 7).
+// Verified via a one-time check that no monster among the current 20
+// produces a 3-way tie across 3 different Families; ties are still
+// handled defensively by falling back to the top edge's Family.
+// ---------------------------------------------------------------------
+function getCompanionFamily(monster) {
+    const familyOf = (ingredientName) => {
+        for (const [key, fam] of Object.entries(GAME_DATA.families)) {
+            if (fam.meat === ingredientName || fam.aroma === ingredientName || fam.seasoning === ingredientName) {
+                return key;
+            }
+        }
+        return null;
+    };
+    const fams = ['top', 'left', 'right'].map(k => familyOf(monster.edges[k].type));
+    const counts = {};
+    fams.forEach(f => { if (f) counts[f] = (counts[f] || 0) + 1; });
+    const maxCount = Math.max(...Object.values(counts));
+    const winners = Object.keys(counts).filter(k => counts[k] === maxCount);
+    return winners.length === 1 ? winners[0] : fams[0]; // defensive tiebreak, not expected to trigger
+}
+
 function checkSpoilage(inventoryIngredientNames) {
     const familyOf = (ingredientName) => {
         for (const [key, fam] of Object.entries(GAME_DATA.families)) {
@@ -894,18 +990,25 @@ function checkSpoilage(inventoryIngredientNames) {
 // character: character object from GAME_DATA.characters (with any equipment/tool ATK bonus pre-added into playerAtk)
 // monster: monster object from GAME_DATA.monsters
 // currentStamina: player's current Stamina before this Hunt
-// killStateChosen: 'CLEAN' | 'RUSHED' | 'BRUTAL' | 'TAMED'
+// killStateChosen: 'CAREFUL' | 'BOLD' | 'DESPERATE' | 'TAMED'
 // round: 1, 2, or 3 (Round 1 ignores Stamina entirely per Basic tier rule)
 function resolveHunt(character, playerAtk, monster, currentStamina, killStateChosen, round) {
-    const success = playerAtk >= monster.hp;
+    // SESSION 10: Taming requires ATK >= HP + buffer (harder than a normal
+    // kill, which only needs ATK >= HP) — subduing something alive is a
+    // higher bar than defeating it. Round 1 never offers Tame at all
+    // (Basic tier is always Careful), so this only matters Round 2+.
+    const requiredAtk = killStateChosen === 'TAMED'
+        ? monster.hp + GAME_DATA.constants.TAME_ATK_BUFFER
+        : monster.hp;
+    const success = playerAtk >= requiredAtk;
 
     if (round === 1) {
-        // Basic tier: always Clean, no Stamina interaction at all
+        // Basic tier: always Careful, no Stamina interaction at all
         return {
             success,
             staminaAfter: currentStamina,
-            killState: success ? 'CLEAN' : null,
-            note: 'Round 1: Stamina inactive, always Clean on success.'
+            killState: success ? 'CAREFUL' : null,
+            note: 'Round 1: Stamina inactive, always Careful on success.'
         };
     }
 
@@ -925,13 +1028,13 @@ function resolveHunt(character, playerAtk, monster, currentStamina, killStateCho
     staminaDelta -= (ks.staminaCost || 0);
     staminaDelta += (ks.staminaRefund || 0);
 
-    // Butcher Bob: Brutal free, Clean/Careful +1 extra cost
+    // Butcher Bob: Desperate free, Careful +1 extra cost
     if (character.id === 'butcher_bob') {
-        if (killStateChosen === 'BRUTAL') staminaDelta += 1; // refunds the 1 it would have cost
-        if (killStateChosen === 'CLEAN') staminaDelta -= 1;  // extra cost
+        if (killStateChosen === 'DESPERATE') staminaDelta += 1; // refunds the 1 it would have cost
+        if (killStateChosen === 'CAREFUL') staminaDelta -= 1;  // extra cost
     }
 
-    // Trapper Tim: facedown-immediate hunts ignore Stamina cost for Clean
+    // Trapper Tim: facedown-immediate hunts ignore Stamina cost for Careful
     // (engine-level check for "facedown immediate" happens outside this function;
     //  this stub assumes caller passes a flag if applicable — left as an extension point)
 
@@ -947,5 +1050,5 @@ function resolveHunt(character, playerAtk, monster, currentStamina, killStateCho
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { GAME_DATA, resolveDishScore, checkSpoilage, resolveHunt };
+    module.exports = { GAME_DATA, resolveDishScore, checkSpoilage, resolveHunt, getCompanionFamily };
 }

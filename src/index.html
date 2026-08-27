@@ -227,6 +227,27 @@
                     <button id="btn-use-power" class="btn-action btn-special">
                         ⭐ Signature Power <small>(1/game)</small>
                     </button>
+                    <button id="btn-forage" class="btn-action" disabled>
+                        🌿 Forage <small>(2 AP)</small>
+                    </button>
+                    <button id="btn-well" class="btn-action" disabled>
+                        💧 Magic Well <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-watchtower" class="btn-action" disabled>
+                        🗼 Watchtower <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-shrine" class="btn-action" disabled>
+                        ⛩️ Shrine <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-kitchen" class="btn-action" disabled>
+                        🍳 Kitchen <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-merchant" class="btn-action" disabled>
+                        🏕️ Merchant <small>(1 AP)</small>
+                    </button>
+                    <button id="btn-coop-assist" class="btn-action btn-tame" disabled>
+                        🤝 Assist Ally <small>(1 AP)</small>
+                    </button>
                 </div>
 
                 <div class="action-status" id="action-status">
@@ -308,8 +329,20 @@
                     <!-- Available dishes player can complete -->
                 </div>
                 <div class="modal-actions">
-                    <button id="btn-confirm-dish" class="btn-primary">Complete</button>
-                    <button id="btn-cancel-dish" class="btn-secondary">Cancel</button>
+                    <button id="btn-cancel-dish" class="btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Merchant / Co-op Assist (reused) -->
+        <div id="modal-merchant" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="merchant-modal-title">Merchant's Camp</h2>
+                <div id="merchant-tool-list"></div>
+                <hr style="margin:8px 0;">
+                <div id="merchant-sell-list"></div>
+                <div class="modal-actions">
+                    <button id="btn-cancel-merchant" class="btn-secondary">Close</button>
                 </div>
             </div>
         </div>
@@ -345,7 +378,7 @@
                     <li>Failed Hunt: lose Stamina = Monster ATK</li>
                     <li>Round 1: Stamina inactive, always Clean</li>
                 </ul>
-                <h3>Actions (AP pool: 2 in R1, 3 in R2-3)</h3>
+                <h3>Actions (AP pool: 3 in R1, 4 in R2-3)</h3>
                 <ul>
                     <li>Explore, Move, Act, Rest — 1 AP each, any order</li>
                 </ul>

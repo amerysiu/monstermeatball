@@ -473,17 +473,25 @@ function renderInventory(player) {
         });
     }
 
-    // Tools (static display of what's equipped/owned — no shop-buying UI yet)
+    // Tools
     const toolsEl = document.getElementById('tools-list');
-    const startingTool = player.character.startingResource?.type === 'tool' ? player.character.startingResource.id : null;
-    toolsEl.innerHTML = startingTool
-        ? `<div style="font-size:0.85em;">🔧 ${GAME_DATA.tools.find(t => t.id === startingTool)?.name || startingTool} (equipped)</div>`
-        : '<p style="font-size:0.8em;color:#999;">No tools equipped.</p>';
+    if (player.tools && player.tools.length > 0) {
+        toolsEl.innerHTML = player.tools.map(toolId => {
+            const tool = GAME_DATA.tools.find(t => t.id === toolId);
+            return `<div style="font-size:0.85em;">🔧 ${tool ? tool.name : toolId}</div>`;
+        }).join('');
+    } else {
+        const startingTool = player.character.startingResource?.type === 'tool' ? player.character.startingResource.id : null;
+        toolsEl.innerHTML = startingTool
+            ? `<div style="font-size:0.85em;">🔧 ${GAME_DATA.tools.find(t => t.id === startingTool)?.name || startingTool} (equipped)</div>`
+            : '<p style="font-size:0.8em;color:#999;">No tools equipped.</p>';
+    }
 }
 
 function updateActionButtonStates() {
     const player = ENGINE.getCurrentPlayer();
     const hasAP = player.ap > 0;
+    const tile = ENGINE.grid[player.position.row][player.position.col];
 
     const exploreBtn = document.getElementById('btn-flip-tile');
     const moveBtn = document.getElementById('btn-move');
@@ -505,6 +513,34 @@ function updateActionButtonStates() {
     signatureBtn.disabled = player.signaturePowerUsed;
 
     document.getElementById('btn-complete-dish').disabled = Object.keys(player.ingredientTokens).length === 0;
+
+    // Utility tile buttons — enabled only when standing on the right tile with AP
+    const forageBtn = document.getElementById('btn-forage');
+    forageBtn.disabled = !(hasAP && player.ap >= 2 && !player.forageUsedThisTurn && tile.revealed && ['ruin', 'butcher', 'aromaist', 'seasoning'].includes(tile.type));
+
+    const wellBtn = document.getElementById('btn-well');
+    wellBtn.disabled = !(hasAP && tile.type === 'well' && tile.revealed);
+
+    const watchtowerBtn = document.getElementById('btn-watchtower');
+    watchtowerBtn.disabled = !(hasAP && tile.type === 'watchtower' && tile.revealed);
+
+    const shrineBtn = document.getElementById('btn-shrine');
+    shrineBtn.disabled = !(hasAP && tile.type === 'shrine' && tile.revealed);
+
+    const kitchenBtn = document.getElementById('btn-kitchen');
+    kitchenBtn.disabled = !(hasAP && tile.type === 'kitchen' && tile.revealed);
+
+    const merchantBtn = document.getElementById('btn-merchant');
+    merchantBtn.disabled = !(hasAP && tile.type === 'merchant' && tile.revealed);
+
+    // Co-op assist button — only in co-op, when ally on same tile and ally has AP
+    const assistBtn = document.getElementById('btn-coop-assist');
+    if (ENGINE.mode === 'coop' && ENGINE.canHuntHere()) {
+        const assists = ENGINE.getAvailableAssists();
+        assistBtn.disabled = assists.length === 0;
+    } else {
+        assistBtn.disabled = true;
+    }
 }
 
 // -----------------------------------------------------------------
@@ -535,6 +571,34 @@ function wireGameActions() {
 
     document.getElementById('btn-complete-dish').addEventListener('click', openDishModal);
 
+    document.getElementById('btn-forage').addEventListener('click', () => {
+        handleActionResult(ENGINE.forage());
+    });
+
+    document.getElementById('btn-well').addEventListener('click', () => {
+        handleActionResult(ENGINE.actOnMagicWell());
+    });
+
+    document.getElementById('btn-watchtower').addEventListener('click', () => {
+        handleActionResult(ENGINE.actOnWatchtower());
+    });
+
+    document.getElementById('btn-shrine').addEventListener('click', () => {
+        handleActionResult(ENGINE.actOnShrine());
+    });
+
+    document.getElementById('btn-kitchen').addEventListener('click', () => {
+        openKitchenModal();
+    });
+
+    document.getElementById('btn-merchant').addEventListener('click', () => {
+        openMerchantModal();
+    });
+
+    document.getElementById('btn-coop-assist').addEventListener('click', () => {
+        openAssistModal();
+    });
+
     document.getElementById('btn-end-turn').addEventListener('click', () => {
         SELECTED_TILE = null;
         const player = ENGINE.getCurrentPlayer();
@@ -549,6 +613,7 @@ function wireGameActions() {
     document.getElementById('btn-cancel-hunt').addEventListener('click', () => closeModal('modal-monster'));
     document.getElementById('btn-cancel-extraction').addEventListener('click', () => closeModal('modal-extraction'));
     document.getElementById('btn-cancel-dish').addEventListener('click', () => closeModal('modal-dish'));
+    document.getElementById('btn-cancel-merchant').addEventListener('click', () => closeModal('modal-merchant'));
 
     document.getElementById('toggle-ref').addEventListener('click', () => {
         document.getElementById('quick-ref').classList.toggle('collapsed');
@@ -556,9 +621,7 @@ function wireGameActions() {
 }
 
 function isRoundOver() {
-    // Simplified round-end condition: every tile revealed, or monster deck empty.
-    const allRevealed = ENGINE.grid.flat().every(t => t.revealed);
-    return allRevealed || ENGINE.monsterDeck.length === 0;
+    return ENGINE.isRoundProductivelyOver() || ENGINE.isRoundOver();
 }
 
 function handleActionResult(result) {
@@ -733,4 +796,235 @@ function openDishModal() {
     });
 
     document.getElementById('modal-dish').classList.remove('hidden');
+}
+
+// --- Kitchen Modal (Wildcard dishes only) ---
+function openKitchenModal() {
+    const player = ENGINE.getCurrentPlayer();
+    const container = document.getElementById('dish-selection');
+    container.innerHTML = '<p style="font-size:0.85em;color:#666;">Abandoned Kitchen: complete a Wildcard dish instantly.</p>';
+
+    const wildcards = GAME_DATA.dishes.filter(d => d.type === 'wildcard');
+    if (wildcards.length === 0) {
+        container.innerHTML += '<p>No wildcard dishes available.</p>';
+        document.getElementById('modal-dish').classList.remove('hidden');
+        return;
+    }
+
+    wildcards.forEach(dish => {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'border:2px solid #ddd; border-radius:8px; padding:8px; margin-bottom:8px;';
+        wrapper.innerHTML = `<b>${dish.name}</b> <span style="font-size:0.8em;color:#666;">${formatRequirements(dish)}</span>`;
+
+        const pickerRow = document.createElement('div');
+        pickerRow.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;';
+
+        const slotPickers = [];
+        const addSlot = (category, count, pool) => {
+            for (let i = 0; i < count; i++) {
+                const select = document.createElement('select');
+                select.innerHTML = `<option value="">-- ${category} --</option>` +
+                    pool.filter(type => (player.ingredientTokens[type] || 0) > 0)
+                        .map(type => `<option value="${type}">${type} (have ${player.ingredientTokens[type]})</option>`).join('');
+                pickerRow.appendChild(select);
+                slotPickers.push(select);
+            }
+        };
+
+        if (dish.requirements.any) addSlot('Any', dish.requirements.any,
+            [...GAME_DATA.constants.INGREDIENT_TYPES.MEATS, ...GAME_DATA.constants.INGREDIENT_TYPES.AROMAS, ...GAME_DATA.constants.INGREDIENT_TYPES.SEASONINGS]);
+        if (dish.requirements.meat) addSlot('Meat', dish.requirements.meat, GAME_DATA.constants.INGREDIENT_TYPES.MEATS);
+        if (dish.requirements.aroma) addSlot('Aroma', dish.requirements.aroma, GAME_DATA.constants.INGREDIENT_TYPES.AROMAS);
+        if (dish.requirements.seasoning) addSlot('Seasoning', dish.requirements.seasoning, GAME_DATA.constants.INGREDIENT_TYPES.SEASONINGS);
+
+        wrapper.appendChild(pickerRow);
+
+        const tryBtn = document.createElement('button');
+        tryBtn.textContent = 'Cook';
+        tryBtn.className = 'btn-action';
+        tryBtn.style.marginTop = '6px';
+        tryBtn.onclick = () => {
+            const chosen = slotPickers.map(s => s.value);
+            if (chosen.some(v => !v)) {
+                container.insertAdjacentHTML('afterbegin', '<p style="color:#c0392b;">Fill every slot before cooking.</p>');
+                return;
+            }
+            const result = ENGINE.actOnKitchen(dish.id, chosen);
+            closeModal('modal-dish');
+            handleActionResult(result);
+        };
+        wrapper.appendChild(tryBtn);
+        container.appendChild(wrapper);
+    });
+
+    document.getElementById('modal-dish').classList.remove('hidden');
+}
+
+// --- Merchant Modal (buy tools, sell ingredients) ---
+function openMerchantModal() {
+    const player = ENGINE.getCurrentPlayer();
+    const modal = document.getElementById('modal-merchant');
+    if (!modal) return;
+
+    document.getElementById('merchant-modal-title').textContent = "Merchant's Camp";
+
+    const toolList = document.getElementById('merchant-tool-list');
+    const sellList = document.getElementById('merchant-sell-list');
+
+    // Tools for sale
+    toolList.innerHTML = '';
+    const toolsForSale = GAME_DATA.tools.filter(t => {
+        const startingTool = player.character.startingResource?.type === 'tool' ? player.character.startingResource.id : null;
+        return t.id !== startingTool;
+    });
+
+    if (toolsForSale.length === 0) {
+        toolList.innerHTML = '<p style="font-size:0.85em;color:#999;">No tools available.</p>';
+    } else {
+        toolsForSale.forEach(tool => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:4px 0;';
+            row.innerHTML = `<span style="font-size:0.9em;">${tool.name} — ${tool.description || ''} (${formatToolCost(tool)})</span>`;
+            const buyBtn = document.createElement('button');
+            buyBtn.textContent = 'Buy';
+            buyBtn.className = 'btn-action';
+            buyBtn.style.cssText = 'font-size:0.8em; padding:4px 10px;';
+            buyBtn.disabled = player.tools.includes(tool.id);
+            buyBtn.onclick = () => {
+                const result = ENGINE.actOnMerchant('buy_tool', { toolId: tool.id });
+                closeModal('modal-merchant');
+                handleActionResult(result);
+            };
+            row.appendChild(buyBtn);
+            toolList.appendChild(row);
+        });
+    }
+
+    // Sell ingredients (sell 2 of one type for 1 of another)
+    sellList.innerHTML = '<p style="font-size:0.85em;color:#666;">Sell 2 of one ingredient for 1 of another.</p>';
+    const entries = Object.entries(player.ingredientTokens);
+    if (entries.length === 0) {
+        sellList.innerHTML = '<p style="font-size:0.85em;color:#999;">No ingredients to sell.</p>';
+    } else {
+        const toBuy = [
+            ...GAME_DATA.constants.INGREDIENT_TYPES.MEATS,
+            ...GAME_DATA.constants.INGREDIENT_TYPES.AROMAS,
+            ...GAME_DATA.constants.INGREDIENT_TYPES.SEASONINGS
+        ].filter(t => !(player.ingredientTokens[t] > 0) || Object.keys(player.ingredientTokens).length === 1);
+        entries.forEach(([type, count]) => {
+            if (count < 2) return;
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:4px 0;';
+            const buySelect = document.createElement('select');
+            buySelect.style.cssText = 'font-size:0.8em;';
+            buySelect.innerHTML = `<option value="">-- want --</option>` +
+                toBuy.map(t => `<option value="${t}">${t}</option>`).join('');
+            row.innerHTML = `<span style="font-size:0.9em;">Sell 2× ${type}</span>`;
+            const sellBtn = document.createElement('button');
+            sellBtn.textContent = 'Trade';
+            sellBtn.className = 'btn-action';
+            sellBtn.style.cssText = 'font-size:0.8em; padding:4px 10px;';
+            sellBtn.onclick = () => {
+                const buyType = buySelect.value;
+                if (!buyType) return;
+                const result = ENGINE.actOnMerchant('sell', { sellType: type, buyType });
+                closeModal('modal-merchant');
+                handleActionResult(result);
+            };
+            row.appendChild(buySelect);
+            row.appendChild(sellBtn);
+            sellList.appendChild(row);
+        });
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function formatToolCost(tool) {
+    if (tool.cost.type === 'any_different') return `${tool.cost.count} different ingredients`;
+    if (tool.cost.type === 'any') return `${tool.cost.count} any ingredients`;
+    return Object.entries(tool.cost).map(([k, v]) => `${v}× ${k}`).join(', ');
+}
+
+// --- Co-op Assist Modal ---
+function openAssistModal() {
+    const assists = ENGINE.getAvailableAssists();
+    if (assists.length === 0) return;
+
+    const modal = document.getElementById('modal-merchant');
+    if (!modal) return;
+
+    document.getElementById('merchant-modal-title').textContent = 'Co-op Assist';
+    const toolList = document.getElementById('merchant-tool-list');
+    const sellList = document.getElementById('merchant-sell-list');
+
+    toolList.innerHTML = '<p style="font-size:0.85em;color:#666;">Choose an ally to assist your hunt. They spend 1 AP and add ⌈ATK/2⌉ bonus damage.</p>';
+    sellList.innerHTML = '';
+
+    assists.forEach(a => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;';
+        row.innerHTML = `<span><b>${a.name}</b> — +${a.bonus} ATK (${a.apCost} AP)</span>`;
+        const chooseBtn = document.createElement('button');
+        chooseBtn.textContent = 'Assist';
+        chooseBtn.className = 'btn-action btn-tame';
+        chooseBtn.style.cssText = 'font-size:0.8em; padding:4px 10px;';
+        chooseBtn.onclick = () => {
+            closeModal('modal-merchant');
+            openHuntModalWithAssist(a.index);
+        };
+        row.appendChild(chooseBtn);
+        sellList.appendChild(row);
+    });
+
+    modal.classList.remove('hidden');
+}
+
+function openHuntModalWithAssist(allyIndex) {
+    const player = ENGINE.getCurrentPlayer();
+    const tile = ENGINE.grid[player.position.row][player.position.col];
+    const previewMonster = tile.contents ? tile.contents.monster : ENGINE.monsterDeck[ENGINE.monsterDeck.length - 1];
+    if (!previewMonster) {
+        document.getElementById('action-status').innerHTML = '<p style="color:#c0392b;">⚠️ No monsters remain in the deck.</p>';
+        return;
+    }
+
+    const ally = ENGINE.players[allyIndex];
+    document.getElementById('player-atk').textContent = player.character.baseAttack + Math.ceil(ally.character.baseAttack / 2);
+    document.getElementById('monster-hp').textContent = previewMonster.hp;
+    document.getElementById('monster-atk').textContent = previewMonster.atk;
+    document.getElementById('monster-display').innerHTML = `<h3>${previewMonster.name}</h3><p style="font-size:0.85em;color:#666;">${ally.name} assisting: +${Math.ceil(ally.character.baseAttack / 2)} ATK</p>`;
+
+    const available = ENGINE.getAvailableKillStates(player);
+    document.querySelectorAll('.kill-state-btn').forEach(btn => {
+        const state = btn.dataset.state;
+        const isTameBtn = state === 'TAMED';
+        btn.style.display = (!isTameBtn && ENGINE.round === 1) ? 'none' : '';
+        btn.disabled = ENGINE.round > 1 && !available.includes(state);
+        btn.classList.remove('selected');
+    });
+
+    let chosenState = ENGINE.round === 1 ? 'CLEAN' : null;
+    document.querySelectorAll('.kill-state-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.kill-state-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            chosenState = btn.dataset.state;
+        };
+    });
+
+    document.getElementById('btn-hunt-monster').onclick = () => {
+        const result = ENGINE.hunt(chosenState, allyIndex);
+        closeModal('modal-monster');
+        if (!result.success) {
+            document.getElementById('action-status').innerHTML = `<p style="color:#c0392b;">${previewMonster.name} got away! ${result.note}</p>`;
+        } else if (result.tamed) {
+            document.getElementById('action-status').innerHTML = `<p>🤝 Tamed ${result.monster.name}! Gained ${result.ingredientGranted.value}x ${result.ingredientGranted.type}. ${result.assistLog || ''}</p>`;
+        } else {
+            document.getElementById('action-status').innerHTML = `<p>⚔️ Captured ${result.monster.name} (${result.killState}). ${result.assistLog || ''}</p>`;
+        }
+        renderGameScreen();
+    };
+
+    document.getElementById('modal-monster').classList.remove('hidden');
 }

@@ -157,7 +157,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: { text: '+1 AP on any turn you also Rest.', type: 'PASSIVE', effectKey: 'apBonusOnRest', wired: false }
+            companionBonus: { text: '+1 AP on any turn you also Rest.', type: 'PASSIVE', effectKey: 'apBonusOnRest', wired: true }
         },
         {
             id: 'ember_crab', name: 'Ember Crab', tier: 1, hp: 2, atk: 1,
@@ -209,7 +209,7 @@ const GAME_DATA = {
                 right: { type: 'Mineral Seasoning', value: 2 },
                 bottom: { type: 'Mineral Seasoning', value: 1, condition: 'Extracted at Seasoning Mill' }
             },
-            companionBonus: { text: '+1 max AP on turns you do not Hunt.', type: 'PASSIVE', effectKey: 'apBonusOnNoHunt', wired: false }
+            companionBonus: { text: '+1 max AP on turns you do not Hunt.', type: 'PASSIVE', effectKey: 'apBonusOnNoHunt', wired: true }
         },
         {
             id: 'river_leviathan', name: 'River Leviathan', tier: 2, hp: 3, atk: 2,
@@ -219,7 +219,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 1 },
                 bottom: { type: 'Sea Meat', value: 1, condition: 'Net used' }
             },
-            companionBonus: { text: 'Once per round, treat a Bold kill as Careful-tier access.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'nextBoldAsCareful', wired: false }
+            companionBonus: { text: 'Once per round, treat a Bold kill as Careful-tier access.', type: 'ACTIVE_ONCE_PER_ROUND', effectKey: 'nextBoldAsCareful', wired: true }
         },
         {
             id: 'pearl_manta', name: 'Pearl Manta', tier: 2, hp: 2, atk: 1,
@@ -239,7 +239,7 @@ const GAME_DATA = {
                 right: { type: 'Mystic Seasoning', value: 2 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Clean Kill' }
             },
-            companionBonus: { text: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).', type: 'ACTIVE_ONCE_PER_GAME', effectKey: 'copyDish', wired: false }
+            companionBonus: { text: 'Once per game, copy another player\'s completed Signature dish at half score (rounded down).', type: 'ACTIVE_ONCE_PER_GAME', effectKey: 'copyDish', wired: true }
         },
         {
             id: 'spore_shambler', name: 'Spore Shambler', tier: 2, hp: 2, atk: 1,
@@ -249,7 +249,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 2 },
                 bottom: { type: 'Herbal Seasoning', value: 1, condition: 'Careful Kill' }
             },
-            companionBonus: { text: 'Wildcard dishes score +1 for the rest of the game.', type: 'PASSIVE', effectKey: 'wildcardBonus', wired: false }
+            companionBonus: { text: 'Wildcard dishes score +1 for the rest of the game.', type: 'PASSIVE', effectKey: 'wildcardBonus', wired: true }
         },
         {
             id: 'frost_owlbear', name: 'Frost Owlbear', tier: 2, hp: 3, atk: 2,
@@ -269,7 +269,7 @@ const GAME_DATA = {
                 right: { type: 'Herbal Seasoning', value: 1 },
                 bottom: { type: 'Exotic Meat', value: 1, condition: 'Extracted at Butcher' }
             },
-            companionBonus: { text: 'Your Underdog Bonus (if active) grants +2 instead of +1.', type: 'PASSIVE', effectKey: 'enhancedUnderdog', wired: false }
+            companionBonus: { text: 'Your Underdog Bonus (if active) grants +2 instead of +1.', type: 'PASSIVE', effectKey: 'enhancedUnderdog', wired: true }
         },
         {
             id: 'pepper_harpy', name: 'Pepper Harpy', tier: 2, hp: 2, atk: 2,
@@ -279,7 +279,7 @@ const GAME_DATA = {
                 right: { type: 'Fiery Seasoning', value: 1 },
                 bottom: { type: 'Fiery Seasoning', value: 1, condition: 'Rushed Kill' }
             },
-            companionBonus: { text: 'Explore actions reveal the tile type before you commit AP (free peek).', type: 'PASSIVE', effectKey: 'freePeek', wired: false }
+            companionBonus: { text: 'Explore actions reveal the tile type before you commit AP (free peek).', type: 'PASSIVE', effectKey: 'freePeek', wired: true }
         },
 
         // --- TIER III (Round 3, HP 3-4, ATK 2-3) ---
@@ -847,9 +847,9 @@ const GAME_DATA = {
         TAME_ATK_BUFFER: 2,
 
         ROUND_GRIDS: {
-            1: { size: 4, tiles: 16, killStates: false, staminaActive: false, apPool: 2 },
-            2: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 3 },
-            3: { size: 6, tiles: 36, killStates: true,  staminaActive: true,  apPool: 3 }
+            1: { size: 4, tiles: 16, killStates: false, staminaActive: false, apPool: 3 },
+            2: { size: 5, tiles: 25, killStates: true,  staminaActive: true,  apPool: 4 },
+            3: { size: 6, tiles: 36, killStates: true,  staminaActive: true,  apPool: 4 }
         },
 
         STAMINA: {
